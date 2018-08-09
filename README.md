@@ -5,3 +5,5 @@ For now, just register your app with spotify [here](https://developer.spotify.co
 Right now it's just printing and enumerating the tracks but I'm going to add playlist creating and stuff too.
 
 Code of interest is mostly defined in the index() function
+
+To actually run it, just pip install the requirements and run spotify_client.py
