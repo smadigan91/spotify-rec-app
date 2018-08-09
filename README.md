@@ -7,3 +7,5 @@ Right now it's just printing and enumerating the tracks but I'm going to add pla
 Code of interest is mostly defined in the index() function
 
 To actually run it, just pip install the requirements and run spotify_client.py
+
+And yeah, I'll abstract the spotify-related static variables to environment variables at some point soon
