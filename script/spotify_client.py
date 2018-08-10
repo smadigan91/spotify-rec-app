@@ -1,4 +1,5 @@
 import spotipy
+import threading
 from spotipy import oauth2
 from flask import jsonify
 from flask import Flask, request
@@ -9,10 +10,11 @@ SPOTIFY_CLIENT_ID = 'XXXXXXXXXXXXXXXXXXXXXX'
 SPOTIFY_CLIENT_SECRET = 'XXXXXXXXXXXXXXXXXXXXXXX'
 SPOTIFY_REDIRECT_URI = 'http://localhost:8080/'
 
-# this is Zoom! by Super Furry Animals
-seed = ['spotify:track:5bY91ggHChDPiNtzW729Hn']
-playlist_scope = 'playlist-modify-private'
-limit = 20
+seeds = ['spotify:track:0hXdeupxBYHkVWaJ04bgor']
+playlist_scope = 'playlist-modify-public'
+playlist_name = 'testing'
+username = 'your_username_here'
+limit = 100
 port = 8080
 
 sp_oauth = oauth2.SpotifyOAuth(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REDIRECT_URI, scope=playlist_scope)
@@ -22,6 +24,8 @@ key_attrs = ['danceability', 'energy', 'valence']
 other_attrs = ['key', 'mode', 'acousticness', 'instrumentalness', 'speechiness', 'tempo', 'time_signature']
 
 access_token = None
+
+track_uris = set()
 
 
 @app.route("/auth")
@@ -39,7 +43,10 @@ def index():
         token_info = sp_oauth.get_access_token(code)
         access_token = token_info['access_token']
         try:
-            get_fuzzy_recs(access_token, seed_track=seed, variance=0.2)
+            for seed_track in seeds:
+                sp = get_targeted_recs(access_token, seed_track=[seed_track])
+            print(len(track_uris))
+            create_playlist(sp, username, playlist_name)
         except Exception:
             raise
         return jsonify("nice")
@@ -54,9 +61,9 @@ def get_targeted_recs(token, seed_track):
     targets = {f'target_{k}': v for k, v in all_track_stats.items()}
 
     recs = sp.recommendations(seed_tracks=seed_track, limit=100, **targets)
-    tracks = [(track['name'], track['artists'][0]['name'], track['uri']) for track in recs['tracks']]
-    for idx, track in enumerate(tracks):
-        print(idx+1, track)
+    tracks = [track['uri'] for track in recs['tracks']]
+    track_uris.update(tracks)
+    return sp
 
 
 # min/max the min/maxables, target everything else
@@ -68,14 +75,11 @@ def get_mixed_recs(token, seed_track, variance):
     maxs = {f'max_{k}': min(round((variance * float(v)) + float(v), 3), 1.0) for k, v in adv_track_stats.items()}
     mins = {f'min_{k}': max(round(float(v) - (variance * float(v)), 3), 0.0) for k, v in adv_track_stats.items()}
     targets = {f'target_{k}': v for k, v in other_track_stats.items()}
-    print(targets)
-    print(maxs)
-    print(mins)
 
-    recs = sp.recommendations(seed_tracks=seed_track, limit=100, **{**maxs, **mins, **targets})
-    tracks = [(track['name'], track['artists'][0]['name'], track['uri']) for track in recs['tracks']]
-    for idx, track in enumerate(tracks):
-        print(idx+1, track)
+    recs = sp.recommendations(seed_tracks=seed_track, limit=limit, **{**maxs, **mins, **targets})
+    tracks = [track['uri'] for track in recs['tracks']]
+    track_uris.update(tracks)
+    return sp
 
 
 def get_fuzzy_recs(token, seed_track, variance):
@@ -87,13 +91,25 @@ def get_fuzzy_recs(token, seed_track, variance):
     adv_track_stats = {k: v for k, v in track_features.items() if k in key_attrs}
     maxs = {f'max_{k}': min(round((variance*float(v))+float(v), 3), 1.0) for k, v in adv_track_stats.items()}
     mins = {f'min_{k}': max(round(float(v)-(variance*float(v)), 3), 0.0) for k, v in adv_track_stats.items()}
-    print(maxs)
-    print(mins)
 
     recs = sp.recommendations(seed_tracks=seed_track, limit=100, **{**maxs, **mins})
-    tracks = [(track['name'], track['artists'][0]['name'], track['uri']) for track in recs['tracks']]
-    for idx, track in enumerate(tracks):
-        print(idx+1, track)
+    tracks = [track['uri'] for track in recs['tracks']]
+    track_uris.update(tracks)
+    return sp
+
+
+def create_playlist(sp: spotipy.Spotify, username, playlist_name):
+    playlist_id = sp.user_playlist_create(username, playlist_name, public=True)['id']
+
+    chunk_size = 100
+    for i in range(0, len(track_uris), chunk_size):
+        chunk = list(track_uris)[i:i+chunk_size]
+        print(f'Adding {len(chunk)} tracks to playlist {playlist_name}')
+        add_track_to_playlist(sp, tracks=chunk, username=username, playlist_id=playlist_id)
+
+
+def add_track_to_playlist(sp: spotipy.Spotify, tracks, username, playlist_id):
+    sp.user_playlist_add_tracks(username, playlist_id, tracks)
 
 
 def html_for_login_button():
