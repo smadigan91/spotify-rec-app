@@ -15,12 +15,14 @@ SPOTIFY_REDIRECT_URI = 'http://localhost:8080/'
 
 seeds = ['spotify:track:6Yy9iylKlDwVuBnMEcmGYP']
 playlist_scope = 'playlist-modify-public'
+user_top_read_scope = 'user-top-read'
 playlist_name = 'playlist_name'
 seed_playlist_id = 'seed_playlist_id'
 limit = 15
 port = 8080
 
-sp_oauth = oauth2.SpotifyOAuth(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REDIRECT_URI, scope=playlist_scope)
+# pay attention to the scope you're passing here - look in spotify web api reference to see if its correct for the call
+sp_oauth = oauth2.SpotifyOAuth(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REDIRECT_URI, scope=user_top_read_scope)
 
 key_attrs = ['danceability', 'energy', 'valence']
 
@@ -50,7 +52,8 @@ def index():
             sp = spotipy.Spotify(auth=access_token)
             # for seed_track in seeds:
             #     get_targeted_recs(sp, seed_track=[seed_track])
-            create_similar_playlist(sp, seed_playlist_id)
+            # create_similar_playlist(sp, seed_playlist_id, max_songs_per_seed=3)
+            get_top_artists(sp, print_output=True)
         except Exception:
             raise
         return jsonify("nice")
@@ -67,7 +70,8 @@ def get_targeted_recs(sp: spotipy.Spotify, seed_track, rec_limit=limit):
     rec_tracks = [track['uri'] for track in recs['tracks']]
     # remove the track(s) we're getting recommendations for
     for track in seed_track:
-        rec_tracks.remove(track)
+        if track in rec_tracks:
+            rec_tracks.remove(track)
     track_uris.update(rec_tracks)
 
 
@@ -84,7 +88,8 @@ def get_mixed_recs(sp: spotipy.Spotify, seed_track, variance, rec_limit=limit):
     rec_tracks = [track['uri'] for track in recs['tracks']]
     # remove the track(s) we're getting recommendations for
     for track in seed_track:
-        rec_tracks.remove(track)
+        if track in rec_tracks:
+            rec_tracks.remove(track)
     track_uris.update(rec_tracks)
 
 
@@ -101,7 +106,8 @@ def get_fuzzy_recs(sp: spotipy.Spotify, seed_track, variance, rec_limit=limit):
     rec_tracks = [track['uri'] for track in recs['tracks']]
     # remove the track(s) we're getting recommendations for
     for track in seed_track:
-        rec_tracks.remove(track)
+        if track in rec_tracks:
+            rec_tracks.remove(track)
     track_uris.update(rec_tracks)
 
 
@@ -125,6 +131,26 @@ def create_similar_playlist(sp: spotipy.Spotify, playlist_id, max_songs_per_seed
 
 def add_track_to_playlist(sp: spotipy.Spotify, tracks, username, playlist_id):
     sp.user_playlist_add_tracks(username, playlist_id, tracks)
+
+
+def get_top_tracks(sp: spotipy.Spotify, track_limit=50, time_range='medium_term', print_output=False):
+    top_tracks = sp.current_user_top_tracks(limit=track_limit, time_range=time_range)
+    track_tuples = [(track['name'], track['artists'][0]['name']) for track in top_tracks['items']]
+    if print_output:
+        print(f'Top {track_limit} tracks for current user in {time_range} timeframe:')
+        print('{:<70}{}'.format('Track Name', 'Artist'))
+        for track_tuple in track_tuples:
+            print('{:<70}{}'.format(track_tuple[0], track_tuple[1]))
+
+
+def get_top_artists(sp: spotipy.Spotify, artist_limit=50, time_range='medium_term', print_output=False):
+    top_artists = sp.current_user_top_artists(limit=artist_limit, time_range=time_range)
+    artist_tuples = [(artist['name'], artist['genres']) for artist in top_artists['items']]
+    if print_output:
+        print(f'Top {artist_limit} tracks for current user in {time_range} timeframe:')
+        print('{:<50}{}'.format('Artist Name', 'Genres'))
+        for track_tuple in artist_tuples:
+            print('{:<50}{}'.format(track_tuple[0], track_tuple[1]))
 
 
 def html_for_login_button():
