@@ -62,8 +62,11 @@ def get_targeted_recs(sp: spotipy.Spotify, seed_track, rec_limit=limit):
     targets = {f'target_{k}': v for k, v in all_track_stats.items()}
 
     recs = sp.recommendations(seed_tracks=seed_track, limit=rec_limit, **targets)
-    tracks = [track['uri'] for track in recs['tracks']]
-    track_uris.update(tracks)
+    rec_tracks = [track['uri'] for track in recs['tracks']]
+    # remove the track(s) we're getting recommendations for
+    for track in seed_track:
+        rec_tracks.remove(track)
+    track_uris.update(rec_tracks)
 
 
 # min/max the min/maxables, target everything else
@@ -76,8 +79,11 @@ def get_mixed_recs(sp: spotipy.Spotify, seed_track, variance, rec_limit=limit):
     targets = {f'target_{k}': v for k, v in other_track_stats.items()}
 
     recs = sp.recommendations(seed_tracks=seed_track, limit=rec_limit, **{**maxs, **mins, **targets})
-    tracks = [track['uri'] for track in recs['tracks']]
-    track_uris.update(tracks)
+    rec_tracks = [track['uri'] for track in recs['tracks']]
+    # remove the track(s) we're getting recommendations for
+    for track in seed_track:
+        rec_tracks.remove(track)
+    track_uris.update(rec_tracks)
 
 
 def get_fuzzy_recs(sp: spotipy.Spotify, seed_track, variance, rec_limit=limit):
@@ -90,8 +96,11 @@ def get_fuzzy_recs(sp: spotipy.Spotify, seed_track, variance, rec_limit=limit):
     mins = {f'min_{k}': max(round(float(v)-(variance*float(v)), 3), 0.0) for k, v in adv_track_stats.items()}
 
     recs = sp.recommendations(seed_tracks=seed_track, limit=rec_limit, **{**maxs, **mins})
-    tracks = [track['uri'] for track in recs['tracks']]
-    track_uris.update(tracks)
+    rec_tracks = [track['uri'] for track in recs['tracks']]
+    # remove the track(s) we're getting recommendations for
+    for track in seed_track:
+        rec_tracks.remove(track)
+    track_uris.update(rec_tracks)
 
 
 def create_playlist(sp: spotipy.Spotify):
