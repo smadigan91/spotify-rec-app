@@ -16,7 +16,7 @@ SPOTIFY_REDIRECT_URI = 'http://localhost:8080/'
 seeds = ['spotify:track:6Yy9iylKlDwVuBnMEcmGYP']
 playlist_scope = 'playlist-modify-public'
 user_top_read_scope = 'user-top-read'
-playlist_name = 'playlist_name'
+playlist_name = "playlist_name"
 seed_playlist_id = 'seed_playlist_id'
 limit = 15
 port = 8080
@@ -47,11 +47,13 @@ def index():
         print("Found Spotify auth code in Request URL! Trying to get valid access token...")
         token_info = sp_oauth.get_access_token(code)
         access_token = token_info['access_token']
+        if access_token:
+            print("Successfully acquired access token! Now doing the thing with the stuff")
         try:
             sp = spotipy.Spotify(auth=access_token)
             # for seed_track in seeds:
             #     get_targeted_recs(sp, seed_track=[seed_track])
-            create_similar_playlist(sp, playlist_id=seed_playlist_id, max_recs_per_seed=6, max_tracks_per_artist=1)
+            create_similar_playlist(sp, playlist_id=seed_playlist_id, max_recs_per_seed=5, max_tracks_per_artist=1)
             # get_top_artists(sp, print_output=True, time_range='short_term')
         except Exception:
             raise
@@ -188,7 +190,6 @@ def create_similar_playlist(sp: spotipy.Spotify, playlist_id, max_recs_per_seed=
     # remove any tracks from original playlist as well. Doesn't always work for some reason (I blame spotify)
     for track in playlist_tracks:
         if track in rec_tracks:
-            print('Actually removing a track from the initial playlist!')
             rec_tracks.remove(track)
     create_playlist(sp, track_uris=rec_tracks)
 
