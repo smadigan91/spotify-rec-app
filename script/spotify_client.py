@@ -1,5 +1,7 @@
 import spotipy
 import os
+import webbrowser
+import threading
 from spotipy import oauth2
 from flask import jsonify
 from flask import Flask, request
@@ -9,7 +11,7 @@ app = Flask(__name__)
 SPOTIFY_CLIENT_ID = os.environ['SPOTIFY_CLIENT_ID']
 SPOTIFY_CLIENT_SECRET = os.environ['SPOTIFY_CLIENT_SECRET']
 USERNAME = os.environ['USERNAME']
-SPOTIFY_REDIRECT_URI = 'http://localhost:8080/'
+SPOTIFY_REDIRECT_URI = 'http://localhost:8080'
 
 seeds = ['spotify:track:6Yy9iylKlDwVuBnMEcmGYP']
 playlist_scope = 'playlist-modify-public'
@@ -137,4 +139,5 @@ def get_spotify_oauth_url():
 
 
 if __name__ == '__main__':
-    app.run(host='', port=port, debug=True)
+    threading.Thread(target=app.run, args=('', port)).start()
+    webbrowser.open(url=f'{SPOTIFY_REDIRECT_URI}/auth', new=2, autoraise=True)
