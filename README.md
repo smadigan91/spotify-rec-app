@@ -12,4 +12,4 @@ Right now there's a couple different methods for getting recommendations (they p
 
 Depending on what you want to do, check the spotify web API reference to see if a different scope is required than the one currently hard-coded as 'playlist_scope'
 
-To actually run it, just pip install the requirements and run spotify_client.py, then go to localhost:8080/auth or whatever you choose to define as your URL for initiating auth and click the link to do oauth and call index()
+To actually run it, pip install the requirements, make sure you have the proper environment variables set, and run spotify_client.py. The app should open up the auth url in your browser automatically, and you just click the "Login to Spotify" link to run the index() function. That's about it really.
