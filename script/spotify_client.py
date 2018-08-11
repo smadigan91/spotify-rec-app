@@ -22,7 +22,7 @@ limit = 15
 port = 8080
 
 # pay attention to the scope you're passing here - look in spotify web api reference to see if its correct for the call
-sp_oauth = oauth2.SpotifyOAuth(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REDIRECT_URI, scope=user_top_read_scope)
+sp_oauth = oauth2.SpotifyOAuth(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REDIRECT_URI, scope=playlist_scope)
 
 key_attrs = ['danceability', 'energy', 'valence']
 
@@ -30,7 +30,6 @@ other_attrs = ['key', 'mode', 'acousticness', 'instrumentalness', 'speechiness',
 
 access_token = None
 
-track_uris = set()
 unique_artist_map = {}
 
 
@@ -52,8 +51,8 @@ def index():
             sp = spotipy.Spotify(auth=access_token)
             # for seed_track in seeds:
             #     get_targeted_recs(sp, seed_track=[seed_track])
-            # create_similar_playlist(sp, seed_playlist_id, max_songs_per_seed=3)
-            get_top_artists(sp, print_output=True)
+            create_similar_playlist(sp, playlist_id=seed_playlist_id, max_recs_per_seed=6, max_tracks_per_artist=1)
+            # get_top_artists(sp, print_output=True, time_range='short_term')
         except Exception:
             raise
         return jsonify("nice")
@@ -61,22 +60,22 @@ def index():
         return jsonify("not great honestly")
 
 
-def get_targeted_recs(sp: spotipy.Spotify, seed_track, rec_limit=limit):
+def get_targeted_recs(sp: spotipy.Spotify, seed_track, rec_limit=limit, max_tracks_per_artist=None):
     track_features = sp.audio_features(seed_track)[0]
     all_track_stats = {k: v for k, v in track_features.items() if (k in key_attrs or k in other_attrs)}
     targets = {f'target_{k}': v for k, v in all_track_stats.items()}
 
     recs = sp.recommendations(seed_tracks=seed_track, limit=rec_limit, **targets)
-    rec_tracks = [track['uri'] for track in recs['tracks']]
+    rec_tracks = extract_rec_tracks(recs, max_tracks_per_artist)
     # remove the track(s) we're getting recommendations for
     for track in seed_track:
         if track in rec_tracks:
             rec_tracks.remove(track)
-    track_uris.update(rec_tracks)
+    return set(rec_tracks)
 
 
 # min/max the min/maxables, target everything else
-def get_mixed_recs(sp: spotipy.Spotify, seed_track, variance, rec_limit=limit):
+def get_mixed_recs(sp: spotipy.Spotify, seed_track, variance, rec_limit=limit, max_tracks_per_artist=None):
     track_features = sp.audio_features(seed_track)[0]
     adv_track_stats = {k: v for k, v in track_features.items() if k in key_attrs}
     other_track_stats = {k: v for k, v in track_features.items() if k in other_attrs}
@@ -85,15 +84,15 @@ def get_mixed_recs(sp: spotipy.Spotify, seed_track, variance, rec_limit=limit):
     targets = {f'target_{k}': v for k, v in other_track_stats.items()}
 
     recs = sp.recommendations(seed_tracks=seed_track, limit=rec_limit, **{**maxs, **mins, **targets})
-    rec_tracks = [track['uri'] for track in recs['tracks']]
+    rec_tracks = extract_rec_tracks(recs, max_tracks_per_artist)
     # remove the track(s) we're getting recommendations for
     for track in seed_track:
         if track in rec_tracks:
             rec_tracks.remove(track)
-    track_uris.update(rec_tracks)
+    return set(rec_tracks)
 
 
-def get_fuzzy_recs(sp: spotipy.Spotify, seed_track, variance, rec_limit=limit):
+def get_fuzzy_recs(sp: spotipy.Spotify, seed_track, variance, rec_limit=limit, max_tracks_per_artist=None):
     # track_stats = sp.track(seed_track[0])
     # artist_uris = [artist['uri'] for artist in track_stats['artists']]
     # genres = sp.artists(artist_uris)['artists'][0]['genres'][:5]
@@ -103,15 +102,55 @@ def get_fuzzy_recs(sp: spotipy.Spotify, seed_track, variance, rec_limit=limit):
     mins = {f'min_{k}': max(round(float(v)-(variance*float(v)), 3), 0.0) for k, v in adv_track_stats.items()}
 
     recs = sp.recommendations(seed_tracks=seed_track, limit=rec_limit, **{**maxs, **mins})
-    rec_tracks = [track['uri'] for track in recs['tracks']]
+    rec_tracks = extract_rec_tracks(recs, max_tracks_per_artist)
     # remove the track(s) we're getting recommendations for
     for track in seed_track:
         if track in rec_tracks:
             rec_tracks.remove(track)
-    track_uris.update(rec_tracks)
+    return set(rec_tracks)
 
 
-def create_playlist(sp: spotipy.Spotify):
+# assumes track and artist uri tuple passed in
+def get_songs_per_artist(rec_track_tuples_list, max_tracks_per_artist=None):
+    artist_map = {}
+    track_uris = []
+    for track_artist_tuple in rec_track_tuples_list:
+        artist = track_artist_tuple[1]
+        if artist not in artist_map:
+            artist_map[artist] = [track_artist_tuple[0]]
+        else:
+            if max_tracks_per_artist:
+                if len(artist_map[artist]) < max_tracks_per_artist:
+                    artist_map[artist].append(track_artist_tuple[0])
+            else:
+                artist_map[artist].append(track_artist_tuple[0])
+    for tracks in artist_map.values():
+        track_uris.extend(tracks)
+    return track_uris
+
+
+def extract_rec_tracks(recs, max_tracks_per_artist=None):
+    if not max_tracks_per_artist:
+        rec_tracks = [track['uri'] for track in recs['tracks']]
+    else:
+        rec_tracks_tuples_list = extract_track_artist_tuples_list(recs)
+        rec_tracks = get_songs_per_artist(rec_tracks_tuples_list, max_tracks_per_artist)
+    return rec_tracks
+
+
+def extract_track_artist_tuples_list(recs):
+    rec_tracks_tuples_list = [(track['uri'], track['artists'][0]['uri']) for track in recs['tracks']]
+    return rec_tracks_tuples_list
+
+
+# playlist stuff
+
+
+def add_track_to_playlist(sp: spotipy.Spotify, tracks, username, playlist_id):
+    sp.user_playlist_add_tracks(username, playlist_id, tracks)
+
+
+def create_playlist(sp: spotipy.Spotify, track_uris):
     playlist_id = sp.user_playlist_create(USERNAME, playlist_name, public=True)['id']
 
     chunk_size = 100
@@ -121,16 +160,40 @@ def create_playlist(sp: spotipy.Spotify):
         add_track_to_playlist(sp, tracks=chunk, username=USERNAME, playlist_id=playlist_id)
 
 
-def create_similar_playlist(sp: spotipy.Spotify, playlist_id, max_songs_per_seed=5):
+def create_similar_playlist(sp: spotipy.Spotify, playlist_id, max_recs_per_seed=5, max_tracks_per_artist=None):
     playlist = sp.user_playlist_tracks(USERNAME, playlist_id, limit=100)
     playlist_tracks = [item['track']['uri'] for item in playlist['items']]
+    rec_tracks = set()
+    tuples_list = []
+    # for each track in the playlist, fetch up to a number of recommended tracks
     for track in playlist_tracks:
-        get_targeted_recs(sp, [track], rec_limit=max_songs_per_seed+1)
-    create_playlist(sp)
+        seed_track = [track]
+        # TODO register callback so filtering methtod isnt hardcoded
+        track_features = sp.audio_features(seed_track)[0]
+        all_track_stats = {k: v for k, v in track_features.items() if (k in key_attrs or k in other_attrs)}
+        targets = {f'target_{k}': v for k, v in all_track_stats.items()}
+
+        recs = sp.recommendations(seed_tracks=seed_track, limit=max_recs_per_seed, **targets)
+        if max_tracks_per_artist:
+            # if max_tracks_per_artist specified, cache artist data too for later filtering
+            track_artist_tuples_list = extract_track_artist_tuples_list(recs)
+            tuples_list.extend(track_artist_tuples_list)
+        else:
+            # otherwise just add all thet track uris to the recommened list
+            rec_uris = [track['uri'] for track in recs['tracks']]
+            rec_tracks.update(rec_uris)
+    if max_tracks_per_artist:
+        # if max_tracks_per_artist specified, filter by given value
+        rec_tracks.update(get_songs_per_artist(tuples_list, max_tracks_per_artist))
+    # remove any tracks from original playlist as well. Doesn't always work for some reason (I blame spotify)
+    for track in playlist_tracks:
+        if track in rec_tracks:
+            print('Actually removing a track from the initial playlist!')
+            rec_tracks.remove(track)
+    create_playlist(sp, track_uris=rec_tracks)
 
 
-def add_track_to_playlist(sp: spotipy.Spotify, tracks, username, playlist_id):
-    sp.user_playlist_add_tracks(username, playlist_id, tracks)
+# Top artists / tracks
 
 
 def get_top_tracks(sp: spotipy.Spotify, track_limit=50, time_range='medium_term', print_output=False):
