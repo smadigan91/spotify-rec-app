@@ -13,7 +13,7 @@ SPOTIFY_REDIRECT_URI = 'http://localhost:8080/'
 
 seeds = ['spotify:track:6Yy9iylKlDwVuBnMEcmGYP']
 playlist_scope = 'playlist-modify-public'
-playlist_name = 'fresh grooves-alike-alike'
+playlist_name = 'playlist_name'
 seed_playlist_id = 'seed_playlist_id'
 limit = 15
 port = 8080
