@@ -1,20 +1,20 @@
 import spotipy
-import threading
+import os
 from spotipy import oauth2
 from flask import jsonify
 from flask import Flask, request
 
 app = Flask(__name__)
 
-SPOTIFY_CLIENT_ID = 'XXXXXXXXXXXXXXXXXXXXXX'
-SPOTIFY_CLIENT_SECRET = 'XXXXXXXXXXXXXXXXXXXXXXX'
+SPOTIFY_CLIENT_ID = os.environ['SPOTIFY_CLIENT_ID']
+SPOTIFY_CLIENT_SECRET = os.environ['SPOTIFY_CLIENT_SECRET']
+USERNAME = os.environ['USERNAME']
 SPOTIFY_REDIRECT_URI = 'http://localhost:8080/'
 
-seeds = ['spotify:track:0hXdeupxBYHkVWaJ04bgor']
+seeds = ['spotify:track:6Yy9iylKlDwVuBnMEcmGYP']
 playlist_scope = 'playlist-modify-public'
-playlist_name = 'testing'
-username = 'your_username_here'
-limit = 100
+playlist_name = 'test'
+limit = 15
 port = 8080
 
 sp_oauth = oauth2.SpotifyOAuth(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REDIRECT_URI, scope=playlist_scope)
@@ -46,7 +46,7 @@ def index():
             for seed_track in seeds:
                 sp = get_targeted_recs(access_token, seed_track=[seed_track])
             print(len(track_uris))
-            create_playlist(sp, username, playlist_name)
+            create_playlist(sp, USERNAME, playlist_name)
         except Exception:
             raise
         return jsonify("nice")
@@ -60,7 +60,7 @@ def get_targeted_recs(token, seed_track):
     all_track_stats = {k: v for k, v in track_features.items() if (k in key_attrs or k in other_attrs)}
     targets = {f'target_{k}': v for k, v in all_track_stats.items()}
 
-    recs = sp.recommendations(seed_tracks=seed_track, limit=100, **targets)
+    recs = sp.recommendations(seed_tracks=seed_track, limit=limit, **targets)
     tracks = [track['uri'] for track in recs['tracks']]
     track_uris.update(tracks)
     return sp
@@ -98,8 +98,8 @@ def get_fuzzy_recs(token, seed_track, variance):
     return sp
 
 
-def create_playlist(sp: spotipy.Spotify, username, playlist_name):
-    playlist_id = sp.user_playlist_create(username, playlist_name, public=True)['id']
+def create_playlist(sp: spotipy.Spotify):
+    playlist_id = sp.user_playlist_create(USERNAME, playlist_name, public=True)['id']
 
     chunk_size = 100
     for i in range(0, len(track_uris), chunk_size):
