@@ -14,15 +14,14 @@ USERNAME = os.environ['USERNAME']
 SPOTIFY_REDIRECT_URI = 'http://localhost:8080/'
 
 seeds = ['spotify:track:6Yy9iylKlDwVuBnMEcmGYP']
-playlist_scope = 'playlist-modify-public'
-user_top_read_scope = 'user-top-read'
+scope = 'playlist-modify-public user-top-read'
 playlist_name = "playlist_name"
 seed_playlist_id = 'seed_playlist_id'
 limit = 15
 port = 8080
 
 # pay attention to the scope you're passing here - look in spotify web api reference to see if its correct for the call
-sp_oauth = oauth2.SpotifyOAuth(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REDIRECT_URI, scope=playlist_scope)
+sp_oauth = oauth2.SpotifyOAuth(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REDIRECT_URI, scope=scope)
 
 key_attrs = ['danceability', 'energy', 'valence']
 
@@ -53,8 +52,8 @@ def index():
             sp = spotipy.Spotify(auth=access_token)
             # for seed_track in seeds:
             #     get_targeted_recs(sp, seed_track=[seed_track])
-            create_similar_playlist(sp, playlist_id=seed_playlist_id, max_recs_per_seed=5, max_tracks_per_artist=1)
-            # get_top_artists(sp, print_output=True, time_range='short_term')
+            # create_similar_playlist(sp, playlist_id=seed_playlist_id, max_recs_per_seed=5, max_tracks_per_artist=1)
+            get_top_tracks(sp, print_output=True, time_range='short_term')
         except Exception:
             raise
         return jsonify("nice")
@@ -211,7 +210,7 @@ def get_top_artists(sp: spotipy.Spotify, artist_limit=50, time_range='medium_ter
     top_artists = sp.current_user_top_artists(limit=artist_limit, time_range=time_range)
     artist_tuples = [(artist['name'], artist['genres']) for artist in top_artists['items']]
     if print_output:
-        print(f'Top {artist_limit} tracks for current user in {time_range} timeframe:')
+        print(f'Top {artist_limit} artists for current user in {time_range} timeframe:')
         print('{:<50}{}'.format('Artist Name', 'Genres'))
         for track_tuple in artist_tuples:
             print('{:<50}{}'.format(track_tuple[0], track_tuple[1]))
