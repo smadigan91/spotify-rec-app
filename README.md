@@ -1,3 +1,7 @@
+# Spoticli
+
+As of now, this is just a runnable tool (its not even command-line ready as the name implies lol I'll get there) for generating recommendations and recommended playlists in spotify, as well as fetching some user metadata that wouldn't otherwise be available. Currently it can create playlists given seed tracks and a few different recommendation techniques, generate a new playlist given an existing playlist as a seed, and fetch a user's top tracks/artists over a period of time.
+
 # Relevant Links
 https://developer.spotify.com/dashboard/
 
