@@ -1,64 +1,21 @@
 import spotipy
 import os
-import webbrowser
-import threading
-from spotipy import oauth2
-from flask import jsonify
-from flask import Flask, request
 
-app = Flask(__name__)
-
-SPOTIFY_CLIENT_ID = os.environ['SPOTIFY_CLIENT_ID']
-SPOTIFY_CLIENT_SECRET = os.environ['SPOTIFY_CLIENT_SECRET']
-USERNAME = os.environ['USERNAME']
-SPOTIFY_REDIRECT_URI = 'http://localhost:8080/'
-
-seeds = ['spotify:track:6Yy9iylKlDwVuBnMEcmGYP']
-scope = 'playlist-modify-public user-top-read'
-playlist_name = "playlist_name"
-seed_playlist_id = 'seed_playlist_id'
-limit = 15
-port = 8080
-
-# pay attention to the scope you're passing here - look in spotify web api reference to see if its correct for the call
-sp_oauth = oauth2.SpotifyOAuth(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REDIRECT_URI, scope=scope)
 
 key_attrs = ['danceability', 'energy', 'valence']
 
 other_attrs = ['key', 'mode', 'acousticness', 'instrumentalness', 'speechiness', 'tempo', 'time_signature']
 
-access_token = None
+divisible_attrs = ['danceability', 'energy', 'valence', 'acousticness', 'instrumentalness', 'speechiness', 'tempo']
 
-unique_artist_map = {}
+non_divisible_attrs = ['key', 'mode', 'time_signature']
 
+USERNAME = os.environ['USERNAME']
 
-@app.route("/auth")
-def auth():
-    return html_for_login_button()
-
-
-@app.route("/")
-def index():
-    global access_token
-    url = request.url
-    code = sp_oauth.parse_response_code(url)
-    if code:
-        print("Found Spotify auth code in Request URL! Trying to get valid access token...")
-        token_info = sp_oauth.get_access_token(code)
-        access_token = token_info['access_token']
-        if access_token:
-            print("Successfully acquired access token! Now doing the thing with the stuff")
-        try:
-            sp = spotipy.Spotify(auth=access_token)
-            # for seed_track in seeds:
-            #     get_targeted_recs(sp, seed_track=[seed_track])
-            # create_similar_playlist(sp, playlist_id=seed_playlist_id, max_recs_per_seed=5, max_tracks_per_artist=1)
-            get_top_tracks(sp, print_output=True, time_range='short_term')
-        except Exception:
-            raise
-        return jsonify("nice")
-    else:
-        return jsonify("not great honestly")
+seeds = ['spotify:track:6Yy9iylKlDwVuBnMEcmGYP']
+playlist_name = "playlist_name"
+seed_playlist_id = 'seed_playlist_id'
+limit = 15
 
 
 def get_targeted_recs(sp: spotipy.Spotify, seed_track, rec_limit=limit, max_tracks_per_artist=None):
@@ -144,7 +101,9 @@ def extract_track_artist_tuples_list(recs):
     return rec_tracks_tuples_list
 
 
-# playlist stuff
+"""
+Playlist stuff
+"""
 
 
 def add_track_to_playlist(sp: spotipy.Spotify, tracks, username, playlist_id):
@@ -193,40 +152,98 @@ def create_similar_playlist(sp: spotipy.Spotify, playlist_id, max_recs_per_seed=
     create_playlist(sp, track_uris=rec_tracks)
 
 
-# Top artists / tracks
+"""
+Top Artists & Tracks
+"""
 
 
-def get_top_tracks(sp: spotipy.Spotify, track_limit=50, time_range='medium_term', print_output=False):
+def get_top_tracks(sp: spotipy.Spotify, track_limit=50, time_range='medium_term'):
+    top_tracks = sp.current_user_top_tracks(limit=track_limit, time_range=time_range)
+    top_uris = [track['uri'] for track in top_tracks['items']]
+    return top_uris
+
+
+def print_top_tracks(sp: spotipy.Spotify, track_limit=50, time_range='medium_term'):
     top_tracks = sp.current_user_top_tracks(limit=track_limit, time_range=time_range)
     track_tuples = [(track['name'], track['artists'][0]['name']) for track in top_tracks['items']]
-    if print_output:
-        print(f'Top {track_limit} tracks for current user in {time_range} timeframe:')
-        print('{:<70}{}'.format('Track Name', 'Artist'))
-        for track_tuple in track_tuples:
-            print('{:<70}{}'.format(track_tuple[0], track_tuple[1]))
+    x = 0
+    for track_tuple in track_tuples:
+        x += 1
+        print('{:<5}{:<70}{}'.format(x, track_tuple[0], track_tuple[1]))
 
 
-def get_top_artists(sp: spotipy.Spotify, artist_limit=50, time_range='medium_term', print_output=False):
+def get_top_genres(sp: spotipy.Spotify, artist_limit=50, time_range='medium_term'):
+    top_artists = sp.current_user_top_artists(limit=artist_limit, time_range=time_range)
+    genres = [artist['genres'] for artist in top_artists['items']]
+    return genres
+
+
+def print_top_genres(sp: spotipy.Spotify, artist_limit=50, time_range='medium_term'):
     top_artists = sp.current_user_top_artists(limit=artist_limit, time_range=time_range)
     artist_tuples = [(artist['name'], artist['genres']) for artist in top_artists['items']]
-    if print_output:
-        print(f'Top {artist_limit} artists for current user in {time_range} timeframe:')
-        print('{:<50}{}'.format('Artist Name', 'Genres'))
-        for track_tuple in artist_tuples:
-            print('{:<50}{}'.format(track_tuple[0], track_tuple[1]))
+    x = 0
+    for track_tuple in artist_tuples:
+        x += 1
+        print('{:<5}{:<50}{}'.format(x, track_tuple[0], track_tuple[1]))
 
 
-def html_for_login_button():
-    auth_url = get_spotify_oauth_url()
-    html_login_button = "<a href='" + auth_url + "'>Login to Spotify</a>"
-    return html_login_button
+def get_average_user_track_data(sp: spotipy.Spotify, top_uris):
+    total_tracks = len(top_uris)
+    average_map = {}
+    top_map = {x: {} for x in non_divisible_attrs}
+    track_features = sp.audio_features(tracks=top_uris)
+    for feature_set in track_features:
+        for key, val in feature_set.items():
+            # track total
+            if key in divisible_attrs:
+                if key in average_map:
+                    average_map[key] = average_map[key] + val
+                else:
+                    average_map[key] = val
+            # track frequency
+            elif key in non_divisible_attrs:
+                if top_map[key]:
+                    if val in top_map[key]:
+                        top_map[key][val] = top_map[key][val] + 1
+                    else:
+                        top_map[key].update({val: 1})
+                else:
+                    top_map[key] = {val: 1}
+    for key, val in average_map.items():
+        average_map[key] = round(average_map[key]/total_tracks, 3)
+    for key, val in top_map.items():
+        top_map[key] = sorted(val, key=val.__getitem__, reverse=True)
+    return average_map, top_map
 
 
-def get_spotify_oauth_url():
-    auth_url = sp_oauth.get_authorize_url()
-    return auth_url
+def rank_genres(genre_lists, top=5):
+    genre_map = {}
+    for genre_list in genre_lists:
+        for genre in genre_list:
+            if genre in genre_map:
+                genre_map[genre] = genre_map[genre] + 1
+            else:
+                genre_map[genre] = 1
+    return sorted(genre_map, key=genre_map.__getitem__, reverse=True)[:top]
 
 
-if __name__ == '__main__':
-    threading.Thread(target=app.run, args=('', port)).start()
-    webbrowser.open(url=f'{SPOTIFY_REDIRECT_URI}auth', new=2, autoraise=True)
+# needs to be reworked
+# keep a mapping of genre bucket to set of stats, so averages are calculated on a per-bucket basis
+
+def create_average_top_playlist(sp: spotipy.Spotify, top_genres, div_stats, non_div_stats, rec_limit=limit):
+    # given 5 top genres, averaged stats, and counting stats,
+    # get recommendations make playlist lol
+    targets = {f'target_{k}': v for k, v in div_stats.items()}
+    targets.update({f'target_{k}': v[0] for k, v in non_div_stats.items()})
+    rec_tracks = set()
+    print(top_genres)
+    for genre in top_genres:
+        print(genre)
+        recs = sp.recommendations(seed_genres=[genre], limit=rec_limit, **targets)
+        print(len(recs['tracks']))
+        rec_uris = [track['uri'] for track in recs['tracks']]
+        rec_tracks.update(rec_uris)
+    # recs = sp.recommendations(seed_genres=top_genres, limit=rec_limit, **targets)
+    print(f"Creating playlist {playlist_name} with {len(rec_tracks)} tracks")
+    # rec_uris = [track['uri'] for track in recs['tracks']]
+    create_playlist(sp, rec_tracks)
