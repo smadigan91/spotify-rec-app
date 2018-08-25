@@ -40,23 +40,28 @@ def index():
             print("Successfully acquired access token! Now doing the thing with the stuff")
         try:
             sp = spotipy.Spotify(auth=access_token)
-            # for seed_track in seeds:
-            #     get_targeted_recs(sp, seed_track=[seed_track])
-            # create_similar_playlist(sp, playlist_id=seed_playlist_id, max_recs_per_seed=5, max_tracks_per_artist=1)
-
-            top_tracks = wrapper.get_top_tracks(sp, time_range='long_term')
-            avg_map, top_map = wrapper.get_average_user_track_data(sp, top_tracks)
-
-            genre_list = wrapper.get_top_genres(sp, time_range='long_term')
-            top_genres = wrapper.rank_genres(genre_list)
-            print(top_genres)
-
-            wrapper.create_average_top_playlist(sp, top_genres=top_genres, div_stats=avg_map, non_div_stats=top_map, rec_limit=100)
+            do_callback(sp)
         except Exception:
             raise
         return jsonify("nice")
     else:
         return jsonify("not great honestly")
+
+
+# interesting code goes here
+def do_callback(sp: spotipy.Spotify):
+    # for seed_track in seeds:
+    #     get_targeted_recs(sp, seed_track=[seed_track])
+    # create_similar_playlist(sp, playlist_id=seed_playlist_id, max_recs_per_seed=5, max_tracks_per_artist=1)
+    top_tracks = wrapper.get_top_tracks(sp, time_range='long_term')
+    avg_map, top_map = wrapper.get_average_user_track_data(sp, top_tracks)
+
+    genre_list = wrapper.get_top_genres(sp, time_range='long_term')
+    top_genres = wrapper.rank_genres(genre_list)
+    print(top_genres)
+
+    wrapper.create_average_top_playlist(sp, top_genres=top_genres, div_stats=avg_map, non_div_stats=top_map,
+                                        rec_limit=100)
 
 
 def html_for_login_button():

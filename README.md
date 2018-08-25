@@ -1,6 +1,6 @@
 # Spoticli
 
-As of now, this is just a runnable tool (its not even command-line ready as the name implies lol I'll get there) for generating recommendations and recommended playlists in spotify, as well as fetching some user metadata that wouldn't otherwise be available. Currently it can create playlists given seed tracks and a few different recommendation techniques, generate a new playlist given an existing playlist as a seed, and fetch a user's top tracks/artists over a period of time.
+As of now, this is just a runnable app (its not even command-line ready as the name implies lol I'll get there) for generating recommendations and recommended playlists in spotify, as well as fetching some user metadata that wouldn't otherwise be available. Currently it can create playlists given seed tracks and a few different recommendation techniques, generate a new playlist given an existing playlist as a seed, and fetch a user's top tracks/artists over a period of time.
 
 # Relevant Links
 https://developer.spotify.com/dashboard/
@@ -16,4 +16,4 @@ Right now there's a couple different methods for getting recommendations (they p
 
 Depending on what you want to do, check the spotify web API reference to see if a different scope is required than the one currently hard-coded as 'playlist_scope'
 
-To actually run it, pip install the requirements, make sure you have the proper environment variables set, and run spotify_client.py. The app should open up the auth url in your browser automatically, and you just click the "Login to Spotify" link to run the index() function. That's about it really.
+To actually run it, pip install the requirements, make sure you have the proper environment variables set, and run spotify_app.py. The app should open up the auth url in your browser automatically, and you just click the "Login to Spotify" link to run the index() function. That's about it really.
