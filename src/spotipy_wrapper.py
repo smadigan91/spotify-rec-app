@@ -18,232 +18,228 @@ seed_playlist_id = 'seed_playlist_id'
 limit = 15
 
 
-def get_targeted_recs(sp: spotipy.Spotify, seed_track, rec_limit=limit, max_tracks_per_artist=None):
-    track_features = sp.audio_features(seed_track)[0]
-    all_track_stats = {k: v for k, v in track_features.items() if (k in key_attrs or k in other_attrs)}
-    targets = {f'target_{k}': v for k, v in all_track_stats.items()}
+class SpotipyWrapper:
 
-    recs = sp.recommendations(seed_tracks=seed_track, limit=rec_limit, **targets)
-    rec_tracks = extract_rec_tracks(recs, max_tracks_per_artist)
-    # remove the track(s) we're getting recommendations for
-    for track in seed_track:
-        if track in rec_tracks:
-            rec_tracks.remove(track)
-    return set(rec_tracks)
+    sp: spotipy.Spotify = None
 
-
-# min/max the min/maxables, target everything else
-def get_mixed_recs(sp: spotipy.Spotify, seed_track, variance, rec_limit=limit, max_tracks_per_artist=None):
-    track_features = sp.audio_features(seed_track)[0]
-    adv_track_stats = {k: v for k, v in track_features.items() if k in key_attrs}
-    other_track_stats = {k: v for k, v in track_features.items() if k in other_attrs}
-    maxs = {f'max_{k}': min(round((variance * float(v)) + float(v), 3), 1.0) for k, v in adv_track_stats.items()}
-    mins = {f'min_{k}': max(round(float(v) - (variance * float(v)), 3), 0.0) for k, v in adv_track_stats.items()}
-    targets = {f'target_{k}': v for k, v in other_track_stats.items()}
-
-    recs = sp.recommendations(seed_tracks=seed_track, limit=rec_limit, **{**maxs, **mins, **targets})
-    rec_tracks = extract_rec_tracks(recs, max_tracks_per_artist)
-    # remove the track(s) we're getting recommendations for
-    for track in seed_track:
-        if track in rec_tracks:
-            rec_tracks.remove(track)
-    return set(rec_tracks)
-
-
-def get_fuzzy_recs(sp: spotipy.Spotify, seed_track, variance, rec_limit=limit, max_tracks_per_artist=None):
-    # track_stats = sp.track(seed_track[0])
-    # artist_uris = [artist['uri'] for artist in track_stats['artists']]
-    # genres = sp.artists(artist_uris)['artists'][0]['genres'][:5]
-    track_features = sp.audio_features(seed_track)[0]
-    adv_track_stats = {k: v for k, v in track_features.items() if k in key_attrs}
-    maxs = {f'max_{k}': min(round((variance*float(v))+float(v), 3), 1.0) for k, v in adv_track_stats.items()}
-    mins = {f'min_{k}': max(round(float(v)-(variance*float(v)), 3), 0.0) for k, v in adv_track_stats.items()}
-
-    recs = sp.recommendations(seed_tracks=seed_track, limit=rec_limit, **{**maxs, **mins})
-    rec_tracks = extract_rec_tracks(recs, max_tracks_per_artist)
-    # remove the track(s) we're getting recommendations for
-    for track in seed_track:
-        if track in rec_tracks:
-            rec_tracks.remove(track)
-    return set(rec_tracks)
-
-
-# assumes track and artist uri tuple passed in
-def get_songs_per_artist(rec_track_tuples_list, max_tracks_per_artist=None):
-    artist_map = {}
-    track_uris = []
-    for track_artist_tuple in rec_track_tuples_list:
-        artist = track_artist_tuple[1]
-        if artist not in artist_map:
-            artist_map[artist] = [track_artist_tuple[0]]
-        else:
-            if max_tracks_per_artist:
-                if len(artist_map[artist]) < max_tracks_per_artist:
-                    artist_map[artist].append(track_artist_tuple[0])
-            else:
-                artist_map[artist].append(track_artist_tuple[0])
-    for tracks in artist_map.values():
-        track_uris.extend(tracks)
-    return track_uris
-
-
-def extract_rec_tracks(recs, max_tracks_per_artist=None):
-    if not max_tracks_per_artist:
-        rec_tracks = [track['uri'] for track in recs['tracks']]
-    else:
-        rec_tracks_tuples_list = extract_track_artist_tuples_list(recs)
-        rec_tracks = get_songs_per_artist(rec_tracks_tuples_list, max_tracks_per_artist)
-    return rec_tracks
-
-
-def extract_track_artist_tuples_list(recs):
-    rec_tracks_tuples_list = [(track['uri'], track['artists'][0]['uri']) for track in recs['tracks']]
-    return rec_tracks_tuples_list
-
-
-"""
-Playlist stuff
-"""
-
-
-def add_track_to_playlist(sp: spotipy.Spotify, tracks, username, playlist_id):
-    sp.user_playlist_add_tracks(username, playlist_id, tracks)
-
-
-def create_playlist(sp: spotipy.Spotify, track_uris):
-    playlist_id = sp.user_playlist_create(USERNAME, playlist_name, public=True)['id']
-
-    chunk_size = 100
-    for i in range(0, len(track_uris), chunk_size):
-        chunk = list(track_uris)[i:i+chunk_size]
-        print(f'Adding {len(chunk)} tracks to playlist {playlist_name}')
-        add_track_to_playlist(sp, tracks=chunk, username=USERNAME, playlist_id=playlist_id)
-
-
-def create_similar_playlist(sp: spotipy.Spotify, playlist_id, max_recs_per_seed=5, max_tracks_per_artist=None):
-    playlist = sp.user_playlist_tracks(USERNAME, playlist_id, limit=100)
-    playlist_tracks = [item['track']['uri'] for item in playlist['items']]
-    rec_tracks = set()
-    tuples_list = []
-    # for each track in the playlist, fetch up to a number of recommended tracks
-    for track in playlist_tracks:
-        seed_track = [track]
-        # TODO register callback so filtering methtod isnt hardcoded
-        track_features = sp.audio_features(seed_track)[0]
+    def __init__(self, access_token):
+        self.sp = spotipy.Spotify(auth=access_token)
+        
+    def get_targeted_recs(self, seed_track, rec_limit=limit, max_tracks_per_artist=None):
+        """
+        :param seed_track:
+        :param rec_limit:
+        :param max_tracks_per_artist:
+        :return:
+        """
+        track_features = self.sp.audio_features(seed_track)[0]
         all_track_stats = {k: v for k, v in track_features.items() if (k in key_attrs or k in other_attrs)}
         targets = {f'target_{k}': v for k, v in all_track_stats.items()}
 
-        recs = sp.recommendations(seed_tracks=seed_track, limit=max_recs_per_seed, **targets)
-        if max_tracks_per_artist:
-            # if max_tracks_per_artist specified, cache artist data too for later filtering
-            track_artist_tuples_list = extract_track_artist_tuples_list(recs)
-            tuples_list.extend(track_artist_tuples_list)
+        recs = self.sp.recommendations(seed_tracks=seed_track, limit=rec_limit, **targets)
+        rec_tracks = self.extract_rec_tracks(recs, max_tracks_per_artist)
+        # remove the track(s) we're getting recommendations for
+        for track in seed_track:
+            if track in rec_tracks:
+                rec_tracks.remove(track)
+        return set(rec_tracks)
+
+    # min/max the min/maxables, target everything else
+    def get_mixed_recs(self, seed_track, variance, rec_limit=limit, max_tracks_per_artist=None):
+        track_features = self.sp.audio_features(seed_track)[0]
+        adv_track_stats = {k: v for k, v in track_features.items() if k in key_attrs}
+        other_track_stats = {k: v for k, v in track_features.items() if k in other_attrs}
+        maxs = {f'max_{k}': min(round((variance * float(v)) + float(v), 3), 1.0) for k, v in adv_track_stats.items()}
+        mins = {f'min_{k}': max(round(float(v) - (variance * float(v)), 3), 0.0) for k, v in adv_track_stats.items()}
+        targets = {f'target_{k}': v for k, v in other_track_stats.items()}
+
+        recs = self.sp.recommendations(seed_tracks=seed_track, limit=rec_limit, **{**maxs, **mins, **targets})
+        rec_tracks = self.extract_rec_tracks(recs, max_tracks_per_artist)
+        # remove the track(s) we're getting recommendations for
+        for track in seed_track:
+            if track in rec_tracks:
+                rec_tracks.remove(track)
+        return set(rec_tracks)
+
+    def get_fuzzy_recs(self, seed_track, variance, rec_limit=limit, max_tracks_per_artist=None):
+        # track_stats = self.sp.track(seed_track[0])
+        # artist_uris = [artist['uri'] for artist in track_stats['artists']]
+        # genres = self.sp.artists(artist_uris)['artists'][0]['genres'][:5]
+        track_features = self.sp.audio_features(seed_track)[0]
+        adv_track_stats = {k: v for k, v in track_features.items() if k in key_attrs}
+        maxs = {f'max_{k}': min(round((variance*float(v))+float(v), 3), 1.0) for k, v in adv_track_stats.items()}
+        mins = {f'min_{k}': max(round(float(v)-(variance*float(v)), 3), 0.0) for k, v in adv_track_stats.items()}
+
+        recs = self.sp.recommendations(seed_tracks=seed_track, limit=rec_limit, **{**maxs, **mins})
+        rec_tracks = self.extract_rec_tracks(recs, max_tracks_per_artist)
+        # remove the track(s) we're getting recommendations for
+        for track in seed_track:
+            if track in rec_tracks:
+                rec_tracks.remove(track)
+        return set(rec_tracks)
+
+    # assumes track and artist uri tuple passed in
+    def get_songs_per_artist(self, rec_track_tuples_list, max_tracks_per_artist=None):
+        artist_map = {}
+        track_uris = []
+        for track_artist_tuple in rec_track_tuples_list:
+            artist = track_artist_tuple[1]
+            if artist not in artist_map:
+                artist_map[artist] = [track_artist_tuple[0]]
+            else:
+                if max_tracks_per_artist:
+                    if len(artist_map[artist]) < max_tracks_per_artist:
+                        artist_map[artist].append(track_artist_tuple[0])
+                else:
+                    artist_map[artist].append(track_artist_tuple[0])
+        for tracks in artist_map.values():
+            track_uris.extend(tracks)
+        return track_uris
+
+    def extract_rec_tracks(self, recs, max_tracks_per_artist=None):
+        if not max_tracks_per_artist:
+            rec_tracks = [track['uri'] for track in recs['tracks']]
         else:
-            # otherwise just add all thet track uris to the recommened list
+            rec_tracks_tuples_list = self.extract_track_artist_tuples_list(recs)
+            rec_tracks = self.get_songs_per_artist(rec_tracks_tuples_list, max_tracks_per_artist)
+        return rec_tracks
+
+    def extract_track_artist_tuples_list(self, recs):
+        rec_tracks_tuples_list = [(track['uri'], track['artists'][0]['uri']) for track in recs['tracks']]
+        return rec_tracks_tuples_list
+
+    """
+    Playlist stuff
+    """
+
+    def add_track_to_playlist(self, tracks, username, playlist_id):
+        self.sp.user_playlist_add_tracks(username, playlist_id, tracks)
+
+    def create_playlist(self, track_uris):
+        playlist_id = self.sp.user_playlist_create(USERNAME, playlist_name, public=True)['id']
+
+        chunk_size = 100
+        for i in range(0, len(track_uris), chunk_size):
+            chunk = list(track_uris)[i:i+chunk_size]
+            print(f'Adding {len(chunk)} tracks to playlist {playlist_name}')
+            self.add_track_to_playlist(tracks=chunk, username=USERNAME, playlist_id=playlist_id)
+
+    def create_similar_playlist(self, playlist_id, max_recs_per_seed=5, max_tracks_per_artist=None):
+        playlist = self.sp.user_playlist_tracks(USERNAME, playlist_id, limit=100)
+        playlist_tracks = [item['track']['uri'] for item in playlist['items']]
+        rec_tracks = set()
+        tuples_list = []
+        # for each track in the playlist, fetch up to a number of recommended tracks
+        for track in playlist_tracks:
+            seed_track = [track]
+            # TODO register callback so filtering methtod isnt hardcoded
+            track_features = self.sp.audio_features(seed_track)[0]
+            all_track_stats = {k: v for k, v in track_features.items() if (k in key_attrs or k in other_attrs)}
+            targets = {f'target_{k}': v for k, v in all_track_stats.items()}
+
+            recs = self.sp.recommendations(seed_tracks=seed_track, limit=max_recs_per_seed, **targets)
+            if max_tracks_per_artist:
+                # if max_tracks_per_artist specified, cache artist data too for later filtering
+                track_artist_tuples_list = self.extract_track_artist_tuples_list(recs)
+                tuples_list.extend(track_artist_tuples_list)
+            else:
+                # otherwise just add all thet track uris to the recommened list
+                rec_uris = [track['uri'] for track in recs['tracks']]
+                rec_tracks.update(rec_uris)
+        if max_tracks_per_artist:
+            # if max_tracks_per_artist specified, filter by given value
+            rec_tracks.update(self.get_songs_per_artist(tuples_list, max_tracks_per_artist))
+        # remove any tracks from original playlist as well. Doesn't always work for some reason (I blame spotify)
+        for track in playlist_tracks:
+            if track in rec_tracks:
+                rec_tracks.remove(track)
+        self.create_playlist(track_uris=rec_tracks)
+
+    """
+    Top Artists & Tracks
+    """
+
+    def get_top_tracks(self, track_limit=50, time_range='medium_term'):
+        top_tracks = self.sp.current_user_top_tracks(limit=track_limit, time_range=time_range)
+        top_uris = [track['uri'] for track in top_tracks['items']]
+        return top_uris
+
+    def print_top_tracks(self, track_limit=50, time_range='medium_term'):
+        top_tracks = self.sp.current_user_top_tracks(limit=track_limit, time_range=time_range)
+        track_tuples = [(track['name'], track['artists'][0]['name']) for track in top_tracks['items']]
+        x = 0
+        for track_tuple in track_tuples:
+            x += 1
+            print('{:<5}{:<70}{}'.format(x, track_tuple[0], track_tuple[1]))
+
+    def get_top_genres(self, artist_limit=50, time_range='medium_term'):
+        top_artists = self.sp.current_user_top_artists(limit=artist_limit, time_range=time_range)
+        genres = [artist['genres'] for artist in top_artists['items']]
+        return genres
+
+    def print_top_genres(self, artist_limit=50, time_range='medium_term'):
+        top_artists = self.sp.current_user_top_artists(limit=artist_limit, time_range=time_range)
+        artist_tuples = [(artist['name'], artist['genres']) for artist in top_artists['items']]
+        x = 0
+        for track_tuple in artist_tuples:
+            x += 1
+            print('{:<5}{:<50}{}'.format(x, track_tuple[0], track_tuple[1]))
+
+    def get_average_user_track_data(self, top_uris):
+        total_tracks = len(top_uris)
+        average_map = {}
+        top_map = {x: {} for x in non_divisible_attrs}
+        track_features = self.sp.audio_features(tracks=top_uris)
+        for feature_set in track_features:
+            for key, val in feature_set.items():
+                # track total
+                if key in divisible_attrs:
+                    if key in average_map:
+                        average_map[key] = average_map[key] + val
+                    else:
+                        average_map[key] = val
+                # track frequency
+                elif key in non_divisible_attrs:
+                    if top_map[key]:
+                        if val in top_map[key]:
+                            top_map[key][val] = top_map[key][val] + 1
+                        else:
+                            top_map[key].update({val: 1})
+                    else:
+                        top_map[key] = {val: 1}
+        for key, val in average_map.items():
+            average_map[key] = round(average_map[key]/total_tracks, 3)
+        for key, val in top_map.items():
+            top_map[key] = sorted(val, key=val.__getitem__, reverse=True)
+        return average_map, top_map
+
+    def rank_genres(self, genre_lists, top=5):
+        genre_map = {}
+        for genre_list in genre_lists:
+            for genre in genre_list:
+                if genre in genre_map:
+                    genre_map[genre] = genre_map[genre] + 1
+                else:
+                    genre_map[genre] = 1
+        return sorted(genre_map, key=genre_map.__getitem__, reverse=True)[:top]
+
+    # needs to be reworked
+    # keep a mapping of genre bucket to set of stats, so averages are calculated on a per-bucket basis
+
+    def create_average_top_playlist(self, top_genres, div_stats, non_div_stats, rec_limit=limit):
+        # given 5 top genres, averaged stats, and counting stats,
+        # get recommendations make playlist lol
+        targets = {f'target_{k}': v for k, v in div_stats.items()}
+        targets.update({f'target_{k}': v[0] for k, v in non_div_stats.items()})
+        rec_tracks = set()
+        print(top_genres)
+        for genre in top_genres:
+            print(genre)
+            recs = self.sp.recommendations(seed_genres=[genre], limit=rec_limit, **targets)
+            print(len(recs['tracks']))
             rec_uris = [track['uri'] for track in recs['tracks']]
             rec_tracks.update(rec_uris)
-    if max_tracks_per_artist:
-        # if max_tracks_per_artist specified, filter by given value
-        rec_tracks.update(get_songs_per_artist(tuples_list, max_tracks_per_artist))
-    # remove any tracks from original playlist as well. Doesn't always work for some reason (I blame spotify)
-    for track in playlist_tracks:
-        if track in rec_tracks:
-            rec_tracks.remove(track)
-    create_playlist(sp, track_uris=rec_tracks)
-
-
-"""
-Top Artists & Tracks
-"""
-
-
-def get_top_tracks(sp: spotipy.Spotify, track_limit=50, time_range='medium_term'):
-    top_tracks = sp.current_user_top_tracks(limit=track_limit, time_range=time_range)
-    top_uris = [track['uri'] for track in top_tracks['items']]
-    return top_uris
-
-
-def print_top_tracks(sp: spotipy.Spotify, track_limit=50, time_range='medium_term'):
-    top_tracks = sp.current_user_top_tracks(limit=track_limit, time_range=time_range)
-    track_tuples = [(track['name'], track['artists'][0]['name']) for track in top_tracks['items']]
-    x = 0
-    for track_tuple in track_tuples:
-        x += 1
-        print('{:<5}{:<70}{}'.format(x, track_tuple[0], track_tuple[1]))
-
-
-def get_top_genres(sp: spotipy.Spotify, artist_limit=50, time_range='medium_term'):
-    top_artists = sp.current_user_top_artists(limit=artist_limit, time_range=time_range)
-    genres = [artist['genres'] for artist in top_artists['items']]
-    return genres
-
-
-def print_top_genres(sp: spotipy.Spotify, artist_limit=50, time_range='medium_term'):
-    top_artists = sp.current_user_top_artists(limit=artist_limit, time_range=time_range)
-    artist_tuples = [(artist['name'], artist['genres']) for artist in top_artists['items']]
-    x = 0
-    for track_tuple in artist_tuples:
-        x += 1
-        print('{:<5}{:<50}{}'.format(x, track_tuple[0], track_tuple[1]))
-
-
-def get_average_user_track_data(sp: spotipy.Spotify, top_uris):
-    total_tracks = len(top_uris)
-    average_map = {}
-    top_map = {x: {} for x in non_divisible_attrs}
-    track_features = sp.audio_features(tracks=top_uris)
-    for feature_set in track_features:
-        for key, val in feature_set.items():
-            # track total
-            if key in divisible_attrs:
-                if key in average_map:
-                    average_map[key] = average_map[key] + val
-                else:
-                    average_map[key] = val
-            # track frequency
-            elif key in non_divisible_attrs:
-                if top_map[key]:
-                    if val in top_map[key]:
-                        top_map[key][val] = top_map[key][val] + 1
-                    else:
-                        top_map[key].update({val: 1})
-                else:
-                    top_map[key] = {val: 1}
-    for key, val in average_map.items():
-        average_map[key] = round(average_map[key]/total_tracks, 3)
-    for key, val in top_map.items():
-        top_map[key] = sorted(val, key=val.__getitem__, reverse=True)
-    return average_map, top_map
-
-
-def rank_genres(genre_lists, top=5):
-    genre_map = {}
-    for genre_list in genre_lists:
-        for genre in genre_list:
-            if genre in genre_map:
-                genre_map[genre] = genre_map[genre] + 1
-            else:
-                genre_map[genre] = 1
-    return sorted(genre_map, key=genre_map.__getitem__, reverse=True)[:top]
-
-
-# needs to be reworked
-# keep a mapping of genre bucket to set of stats, so averages are calculated on a per-bucket basis
-
-def create_average_top_playlist(sp: spotipy.Spotify, top_genres, div_stats, non_div_stats, rec_limit=limit):
-    # given 5 top genres, averaged stats, and counting stats,
-    # get recommendations make playlist lol
-    targets = {f'target_{k}': v for k, v in div_stats.items()}
-    targets.update({f'target_{k}': v[0] for k, v in non_div_stats.items()})
-    rec_tracks = set()
-    print(top_genres)
-    for genre in top_genres:
-        print(genre)
-        recs = sp.recommendations(seed_genres=[genre], limit=rec_limit, **targets)
-        print(len(recs['tracks']))
-        rec_uris = [track['uri'] for track in recs['tracks']]
-        rec_tracks.update(rec_uris)
-    # recs = sp.recommendations(seed_genres=top_genres, limit=rec_limit, **targets)
-    print(f"Creating playlist {playlist_name} with {len(rec_tracks)} tracks")
-    # rec_uris = [track['uri'] for track in recs['tracks']]
-    create_playlist(sp, rec_tracks)
+        # recs = self.sp.recommendations(seed_genres=top_genres, limit=rec_limit, **targets)
+        print(f"Creating playlist {playlist_name} with {len(rec_tracks)} tracks")
+        # rec_uris = [track['uri'] for track in recs['tracks']]
+        self.create_playlist(rec_tracks)

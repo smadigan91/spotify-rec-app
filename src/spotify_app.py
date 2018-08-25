@@ -1,11 +1,10 @@
-import spotipy
 import os
 import webbrowser
 import threading
 from spotipy import oauth2
 from flask import jsonify
 from flask import Flask, request
-import spotipy_wrapper as wrapper
+from spotipy_wrapper import SpotipyWrapper
 
 app = Flask(__name__)
 
@@ -39,7 +38,7 @@ def index():
         if access_token:
             print("Successfully acquired access token! Now doing the thing with the stuff")
         try:
-            sp = spotipy.Spotify(auth=access_token)
+            sp = SpotipyWrapper(access_token)
             do_callback(sp)
         except Exception:
             raise
@@ -49,19 +48,18 @@ def index():
 
 
 # interesting code goes here
-def do_callback(sp: spotipy.Spotify):
+def do_callback(sp: SpotipyWrapper):
     # for seed_track in seeds:
     #     get_targeted_recs(sp, seed_track=[seed_track])
     # create_similar_playlist(sp, playlist_id=seed_playlist_id, max_recs_per_seed=5, max_tracks_per_artist=1)
-    top_tracks = wrapper.get_top_tracks(sp, time_range='long_term')
-    avg_map, top_map = wrapper.get_average_user_track_data(sp, top_tracks)
+    top_tracks = sp.get_top_tracks(time_range='long_term')
+    avg_map, top_map = sp.get_average_user_track_data(top_tracks)
 
-    genre_list = wrapper.get_top_genres(sp, time_range='long_term')
-    top_genres = wrapper.rank_genres(genre_list)
+    genre_list = sp.get_top_genres(time_range='long_term')
+    top_genres = sp.rank_genres(genre_list)
     print(top_genres)
 
-    wrapper.create_average_top_playlist(sp, top_genres=top_genres, div_stats=avg_map, non_div_stats=top_map,
-                                        rec_limit=100)
+    sp.create_average_top_playlist(top_genres=top_genres, div_stats=avg_map, non_div_stats=top_map, rec_limit=100)
 
 
 def html_for_login_button():
