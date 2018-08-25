@@ -14,6 +14,6 @@ Register your app with spotify [here](https://developer.spotify.com/dashboard/) 
 
 Right now there's a couple different methods for getting recommendations (they produce fairly similar recommendations actually) as well as a method for creating a playlist given recommendations or a similar playlist given an existing playlist. All the action happens in the index() function for now.
 
-Depending on what you want to do, check the spotify web API reference to see if a different scope is required than the one currently hard-coded as 'playlist_scope'
+Depending on what you want to do, check the spotify web API reference to see if a different scope is required than the one currently hard-coded as 'scope'. Note that multiple scopes can be used at once so long as they are delimited by a space.
 
 To actually run it, pip install the requirements, make sure you have the proper environment variables set, and run spotify_app.py. The app should open up the auth url in your browser automatically, and you just click the "Login to Spotify" link to run the index() function. That's about it really.
