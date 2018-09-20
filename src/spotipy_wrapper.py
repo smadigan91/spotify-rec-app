@@ -188,6 +188,15 @@ class SpotipyWrapper:
     Top Artists & Tracks
     """
 
+    def get_top_recs(self, track_limit=50, time_range='short_term', max_recs_per_seed=5, max_tracks_per_artist=None):
+        # gets the top up to max_recs_per_seed recommendations for each of a user's top recent songs
+        top_tracks = self.get_top_tracks(track_limit, time_range)
+        rec_tracks = set()
+        for track in top_tracks:
+            rec_tracks.update(self.get_targeted_recs(seed_track=[track], rec_limit=max_recs_per_seed,
+                                                     max_tracks_per_artist=max_tracks_per_artist))
+        return rec_tracks
+
     def get_top_tracks(self, track_limit=50, time_range='medium_term'):
         """
         gets the top up to 50 tracks for the user
@@ -195,8 +204,10 @@ class SpotipyWrapper:
         :param time_range: short_term, medium_term, or long_term
         :return: top track uris
         """
-        top_tracks = self.sp.current_user_top_tracks(limit=track_limit, time_range=time_range)
-        top_uris = [track['uri'] for track in top_tracks['items']]
+        top_uris = set()
+        for i in range(0, track_limit, 50):
+            top_tracks = self.sp.current_user_top_tracks(offset=i, limit=track_limit, time_range=time_range)
+            top_uris.update(track['uri'] for track in top_tracks['items'])
         return top_uris
 
     def print_top_tracks(self, track_limit=50, time_range='medium_term'):
@@ -276,6 +287,16 @@ class SpotipyWrapper:
         return sorted(genre_map, key=genre_map.__getitem__, reverse=True)[:top]
 
     # needs to be reworked; fringe music genres can tip the scales too heavily
+    """
+    TODO:
+    Possible genre seeding approach
+    Create a mapping of song stats to songs
+        Stats being Instrumentalness, Acousticness, Liveness, Speechiness, Danceability, Energy and Valence
+    Perform K-Means clustering on the keys?
+    Assuming you know which cluster the keys belong to, assign songs to the clusters
+    For each cluster, take the average stats of the cluster(?) and fetch recommendations for them and some number of songs in the cluster?
+    Or maybe the song that best represents the cluster? (is most similar to the mean of the cluster)
+    """
     def create_average_top_playlist(self, top_genres, div_stats, non_div_stats, rec_limit=limit):
         """
         creates a playlist based on the average stats from a user's top artists/genres

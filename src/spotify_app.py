@@ -49,17 +49,9 @@ def index():
 
 # interesting code goes here
 def do_callback(sp: SpotipyWrapper):
-    # for seed_track in seeds:
-    #     get_targeted_recs(sp, seed_track=[seed_track])
-    # create_similar_playlist(sp, playlist_id=seed_playlist_id, max_recs_per_seed=5, max_tracks_per_artist=1)
-    top_tracks = sp.get_top_tracks(time_range='long_term')
-    avg_map, top_map = sp.get_average_user_track_data(top_tracks)
-
-    genre_list = sp.get_top_genres(time_range='long_term')
-    top_genres = sp.rank_genres(genre_list)
-    print(top_genres)
-
-    sp.create_average_top_playlist(top_genres=top_genres, div_stats=avg_map, non_div_stats=top_map, rec_limit=100)
+    # get the top 5 recs for each of the top 100 tracks in the short term with two maximum songs per artist returned
+    rec_tracks = sp.get_top_recs(track_limit=100, time_range='long_term', max_recs_per_seed=5, max_tracks_per_artist=2)
+    sp.create_playlist(rec_tracks)
 
 
 def html_for_login_button():
