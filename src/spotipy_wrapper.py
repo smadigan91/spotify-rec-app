@@ -4,18 +4,13 @@ import os
 
 key_attrs = ['danceability', 'energy', 'valence']
 
-other_attrs = ['key', 'mode', 'acousticness', 'instrumentalness', 'speechiness', 'tempo', 'time_signature']
-
-divisible_attrs = ['danceability', 'energy', 'valence', 'acousticness', 'instrumentalness', 'speechiness', 'tempo']
-
-non_divisible_attrs = ['key', 'mode', 'time_signature']
+other_attrs = ['key', 'mode']  # , 'acousticness', 'instrumentalness', 'speechiness', 'tempo', 'time_signature']
 
 USERNAME = os.environ['USERNAME']
 
 seeds = ['spotify:track:6Yy9iylKlDwVuBnMEcmGYP']
 playlist_name = "playlist_name"
-seed_playlist_id = 'seed_playlist_id'
-limit = 15
+default_rec_limit = 15
 
 
 class SpotipyWrapper:
@@ -25,7 +20,7 @@ class SpotipyWrapper:
     def __init__(self, access_token):
         self.sp = spotipy.Spotify(auth=access_token)
 
-    def get_targeted_recs(self, seed_track, rec_limit=limit, max_tracks_per_artist=None):
+    def get_targeted_recs(self, seed_track, rec_limit=default_rec_limit, max_tracks_per_artist=None):
         """
         uses target_* for each attribute
         :param seed_track: the track to generate recommendations from
@@ -45,7 +40,7 @@ class SpotipyWrapper:
                 rec_tracks.remove(track)
         return set(rec_tracks)
 
-    def get_mixed_recs(self, seed_track, variance, rec_limit=limit, max_tracks_per_artist=None):
+    def get_mixed_recs(self, seed_track, variance, rec_limit=default_rec_limit, max_tracks_per_artist=None):
         """
         max_*/min_* key attributes by +/- variance%, target_* everything else
         :param seed_track: the track to generate recommendations from
@@ -69,7 +64,7 @@ class SpotipyWrapper:
                 rec_tracks.remove(track)
         return set(rec_tracks)
 
-    def get_fuzzy_recs(self, seed_track, variance, rec_limit=limit, max_tracks_per_artist=None):
+    def get_fuzzy_recs(self, seed_track, variance, rec_limit=default_rec_limit, max_tracks_per_artist=None):
         """
         :param seed_track: the track to generate recommendations from
         :param variance: percentage to vary max/min by relative to base (e.g. 0.2 means +/-20% of the original value)
@@ -147,19 +142,34 @@ class SpotipyWrapper:
             print(f'Adding {len(chunk)} tracks to playlist {playlist_name}')
             self.add_track_to_playlist(tracks=chunk, username=USERNAME, playlist_id=playlist_id)
 
-    def create_similar_playlist(self, playlist_id, max_recs_per_seed=5, max_tracks_per_artist=None):
+    def get_playlist_tracks(self, playlist_id, track_limit=None):
+        track_uris = set()
+        playlist = self.sp.user_playlist_tracks(USERNAME, playlist_id,
+                                                limit=track_limit if track_limit and track_limit <= 100 else 100)
+        track_uris.update(item['track']['uri'] for item in playlist['items'])
+        offset = 0
+        while playlist['next'] and (track_limit is None or track_limit != len(track_uris)):
+            limit = track_limit - len(track_uris) if track_limit else 100
+            offset = offset + 100
+            playlist = self.sp.user_playlist_tracks(USERNAME, playlist_id,
+                                                    limit=limit if limit <= 100 else 100, offset=offset)
+            track_uris.update(item['track']['uri'] for item in playlist['items'])
+        return track_uris
+
+    def create_similar_playlist(self, playlist_id, max_recs_per_seed=5, max_tracks_per_artist=None, track_limit=None):
         """
         creates a playlist with tracks similar to those in a given playlist's
         :param playlist_id: the id of the seed playlist
         :param max_recs_per_seed: max number of recommended tracks per song on seed playlist
         :param max_tracks_per_artist: max number of tracks per artist on target playlist
+        :param track_limit: number of tracks from the given playlist to fetch recommendations for
         """
-        playlist = self.sp.user_playlist_tracks(USERNAME, playlist_id, limit=100)
-        playlist_tracks = [item['track']['uri'] for item in playlist['items']]
+        playlist_tracks = self.get_playlist_tracks(playlist_id=playlist_id, track_limit=track_limit)
         rec_tracks = set()
         tuples_list = []
         # for each track in the playlist, fetch up to a number of recommended tracks
         for track in playlist_tracks:
+            print(track)
             seed_track = [track]
             # TODO register callback so filtering methtod isnt hardcoded
             track_features = self.sp.audio_features(seed_track)[0]
@@ -237,39 +247,6 @@ class SpotipyWrapper:
             x += 1
             print('{:<5}{:<50}{}'.format(x, track_tuple[0], track_tuple[1]))
 
-    def get_average_user_track_data(self, top_uris):
-        """
-        collectts and averages the average-able attributes of the given tracks, buckets the non-average-able ones
-        :param top_uris: top track uris
-        :return: a tuple of the averages and the buckets
-        """
-        total_tracks = len(top_uris)
-        average_map = {}
-        top_map = {x: {} for x in non_divisible_attrs}
-        track_features = self.sp.audio_features(tracks=top_uris)
-        for feature_set in track_features:
-            for key, val in feature_set.items():
-                # track total
-                if key in divisible_attrs:
-                    if key in average_map:
-                        average_map[key] = average_map[key] + val
-                    else:
-                        average_map[key] = val
-                # track frequency
-                elif key in non_divisible_attrs:
-                    if top_map[key]:
-                        if val in top_map[key]:
-                            top_map[key][val] = top_map[key][val] + 1
-                        else:
-                            top_map[key].update({val: 1})
-                    else:
-                        top_map[key] = {val: 1}
-        for key, val in average_map.items():
-            average_map[key] = round(average_map[key]/total_tracks, 3)
-        for key, val in top_map.items():
-            top_map[key] = sorted(val, key=val.__getitem__, reverse=True)
-        return average_map, top_map
-
     def rank_genres(self, genre_lists, top=5):
         """
         derives the most listened to genres given a list of lists of genres
@@ -285,38 +262,3 @@ class SpotipyWrapper:
                 else:
                     genre_map[genre] = 1
         return sorted(genre_map, key=genre_map.__getitem__, reverse=True)[:top]
-
-    # needs to be reworked; fringe music genres can tip the scales too heavily
-    """
-    TODO:
-    Possible genre seeding approach
-    Create a mapping of song stats to songs
-        Stats being Instrumentalness, Acousticness, Liveness, Speechiness, Danceability, Energy and Valence
-    Perform K-Means clustering on the keys?
-    Assuming you know which cluster the keys belong to, assign songs to the clusters
-    For each cluster, take the average stats of the cluster(?) and fetch recommendations for them and some number of songs in the cluster?
-    Or maybe the song that best represents the cluster? (is most similar to the mean of the cluster)
-    """
-    def create_average_top_playlist(self, top_genres, div_stats, non_div_stats, rec_limit=limit):
-        """
-        creates a playlist based on the average stats from a user's top artists/genres
-        :param top_genres: most listened to genres
-        :param div_stats: the features that have been averaged
-        :param non_div_stats: the features that have been bucketed
-        :param rec_limit: max number of recommendations per track, up to 100
-        :return:
-        """
-        targets = {f'target_{k}': v for k, v in div_stats.items()}
-        targets.update({f'target_{k}': v[0] for k, v in non_div_stats.items()})
-        rec_tracks = set()
-        print(top_genres)
-        for genre in top_genres:
-            print(genre)
-            recs = self.sp.recommendations(seed_genres=[genre], limit=rec_limit, **targets)
-            print(len(recs['tracks']))
-            rec_uris = [track['uri'] for track in recs['tracks']]
-            rec_tracks.update(rec_uris)
-        # recs = self.sp.recommendations(seed_genres=top_genres, limit=rec_limit, **targets)
-        print(f"Creating playlist {playlist_name} with {len(rec_tracks)} tracks")
-        # rec_uris = [track['uri'] for track in recs['tracks']]
-        self.create_playlist(rec_tracks)

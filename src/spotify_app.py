@@ -49,9 +49,11 @@ def index():
 
 # interesting code goes here
 def do_callback(sp: SpotipyWrapper):
+    seed_playlist_id = 'playlist_id'
+    sp.create_similar_playlist(playlist_id=seed_playlist_id, max_recs_per_seed=5, max_tracks_per_artist=3)
     # get the top 5 recs for each of the top 100 tracks in the short term with two maximum songs per artist returned
-    rec_tracks = sp.get_top_recs(track_limit=100, time_range='long_term', max_recs_per_seed=5, max_tracks_per_artist=2)
-    sp.create_playlist(rec_tracks)
+    # rec_tracks = sp.get_top_recs(track_limit=100, time_range='long_term', max_recs_per_seed=5, max_tracks_per_artist=2)
+    # sp.create_playlist(rec_tracks)
 
 
 def html_for_login_button():
@@ -67,4 +69,5 @@ def get_spotify_oauth_url():
 
 if __name__ == '__main__':
     threading.Thread(target=app.run, args=('', port)).start()
+    # app.run(host='', port=port)
     webbrowser.open(url=f'{SPOTIFY_REDIRECT_URI}auth', new=2, autoraise=True)
