@@ -169,7 +169,6 @@ class SpotipyWrapper:
         tuples_list = []
         # for each track in the playlist, fetch up to a number of recommended tracks
         for track in playlist_tracks:
-            print(track)
             seed_track = [track]
             # TODO register callback so filtering methtod isnt hardcoded
             track_features = self.sp.audio_features(seed_track)[0]

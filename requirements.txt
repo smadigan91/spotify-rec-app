@@ -1,2 +1,4 @@
 spotipy
 flask
+redis
+requests
