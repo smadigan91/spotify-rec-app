@@ -13,6 +13,7 @@ SPOTIFY_CLIENT_SECRET = os.environ['SPOTIFY_CLIENT_SECRET']
 SPOTIFY_REDIRECT_URI = 'http://localhost:8080/'
 
 scope = 'playlist-modify-public user-top-read'
+user = os.environ['USERNAME']
 port = 8080
 
 # pay attention to the scope you're passing here - look in spotify web api reference to see if its correct for the call
@@ -38,7 +39,7 @@ def index():
         if access_token:
             print("Successfully acquired access token! Now doing the thing with the stuff")
         try:
-            sp = SpotipyWrapper(access_token)
+            sp = SpotipyWrapper(user, access_token)
             do_callback(sp)
         except Exception:
             raise
@@ -49,11 +50,11 @@ def index():
 
 # interesting code goes here
 def do_callback(sp: SpotipyWrapper):
-    seed_playlist_id = 'playlist_id'
-    sp.create_similar_playlist(playlist_id=seed_playlist_id, max_recs_per_seed=5, max_tracks_per_artist=3)
     # get the top 5 recs for each of the top 100 tracks in the short term with two maximum songs per artist returned
     # rec_tracks = sp.get_top_recs(track_limit=100, time_range='long_term', max_recs_per_seed=5, max_tracks_per_artist=2)
     # sp.create_playlist(rec_tracks)
+    seed_playlist_id = '1rE0mogWXb3nX0szdJZRCm'
+    sp.create_similar_playlist(playlist_id=seed_playlist_id, max_recs_per_seed=30, max_tracks_per_artist=1)
 
 
 def html_for_login_button():

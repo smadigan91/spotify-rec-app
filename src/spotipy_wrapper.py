@@ -1,13 +1,6 @@
 import spotipy
-import os
-
-
 key_attrs = ['danceability', 'energy', 'valence']
-
 other_attrs = ['key', 'mode']  # , 'acousticness', 'instrumentalness', 'speechiness', 'tempo', 'time_signature']
-
-USERNAME = os.environ['USERNAME']
-
 seeds = ['spotify:track:6Yy9iylKlDwVuBnMEcmGYP']
 playlist_name = "playlist_name"
 default_rec_limit = 15
@@ -17,7 +10,8 @@ class SpotipyWrapper:
 
     sp: spotipy.Spotify = None
 
-    def __init__(self, access_token):
+    def __init__(self, user, access_token):
+        self.user = user
         self.sp = spotipy.Spotify(auth=access_token)
 
     def get_targeted_recs(self, seed_track, rec_limit=default_rec_limit, max_tracks_per_artist=None):
@@ -31,7 +25,6 @@ class SpotipyWrapper:
         track_features = self.sp.audio_features(seed_track)[0]
         all_track_stats = {k: v for k, v in track_features.items() if (k in key_attrs or k in other_attrs)}
         targets = {f'target_{k}': v for k, v in all_track_stats.items()}
-
         recs = self.sp.recommendations(seed_tracks=seed_track, limit=rec_limit, **targets)
         rec_tracks = self.extract_rec_tracks(recs, max_tracks_per_artist)
         # remove the track(s) we're getting recommendations for
@@ -55,7 +48,6 @@ class SpotipyWrapper:
         maxs = {f'max_{k}': min(round((variance * float(v)) + float(v), 3), 1.0) for k, v in adv_track_stats.items()}
         mins = {f'min_{k}': max(round(float(v) - (variance * float(v)), 3), 0.0) for k, v in adv_track_stats.items()}
         targets = {f'target_{k}': v for k, v in other_track_stats.items()}
-
         recs = self.sp.recommendations(seed_tracks=seed_track, limit=rec_limit, **{**maxs, **mins, **targets})
         rec_tracks = self.extract_rec_tracks(recs, max_tracks_per_artist)
         # remove the track(s) we're getting recommendations for
@@ -79,7 +71,6 @@ class SpotipyWrapper:
         adv_track_stats = {k: v for k, v in track_features.items() if k in key_attrs}
         maxs = {f'max_{k}': min(round((variance*float(v))+float(v), 3), 1.0) for k, v in adv_track_stats.items()}
         mins = {f'min_{k}': max(round(float(v)-(variance*float(v)), 3), 0.0) for k, v in adv_track_stats.items()}
-
         recs = self.sp.recommendations(seed_tracks=seed_track, limit=rec_limit, **{**maxs, **mins})
         rec_tracks = self.extract_rec_tracks(recs, max_tracks_per_artist)
         # remove the track(s) we're getting recommendations for
@@ -128,30 +119,28 @@ class SpotipyWrapper:
     """
     Playlist stuff
     """
-
     def add_track_to_playlist(self, tracks, username, playlist_id):
         self.sp.user_playlist_add_tracks(username, playlist_id, tracks)
-
     # creates a playlist given a set of track uris
-    def create_playlist(self, track_uris):
-        playlist_id = self.sp.user_playlist_create(USERNAME, playlist_name, public=True)['id']
 
+    def create_playlist(self, track_uris):
+        playlist_id = self.sp.user_playlist_create(self.user, playlist_name, public=True)['id']
         chunk_size = 100
         for i in range(0, len(track_uris), chunk_size):
             chunk = list(track_uris)[i:i+chunk_size]
             print(f'Adding {len(chunk)} tracks to playlist {playlist_name}')
-            self.add_track_to_playlist(tracks=chunk, username=USERNAME, playlist_id=playlist_id)
+            self.add_track_to_playlist(tracks=chunk, username=self.user, playlist_id=playlist_id)
 
     def get_playlist_tracks(self, playlist_id, track_limit=None):
         track_uris = set()
-        playlist = self.sp.user_playlist_tracks(USERNAME, playlist_id,
+        playlist = self.sp.user_playlist_tracks(self.user, playlist_id,
                                                 limit=track_limit if track_limit and track_limit <= 100 else 100)
         track_uris.update(item['track']['uri'] for item in playlist['items'])
         offset = 0
         while playlist['next'] and (track_limit is None or track_limit != len(track_uris)):
             limit = track_limit - len(track_uris) if track_limit else 100
             offset = offset + 100
-            playlist = self.sp.user_playlist_tracks(USERNAME, playlist_id,
+            playlist = self.sp.user_playlist_tracks(self.user, playlist_id,
                                                     limit=limit if limit <= 100 else 100, offset=offset)
             track_uris.update(item['track']['uri'] for item in playlist['items'])
         return track_uris
@@ -169,13 +158,11 @@ class SpotipyWrapper:
         tuples_list = []
         # for each track in the playlist, fetch up to a number of recommended tracks
         for track in playlist_tracks:
-            print(track)
             seed_track = [track]
             # TODO register callback so filtering methtod isnt hardcoded
             track_features = self.sp.audio_features(seed_track)[0]
             all_track_stats = {k: v for k, v in track_features.items() if (k in key_attrs or k in other_attrs)}
             targets = {f'target_{k}': v for k, v in all_track_stats.items()}
-
             recs = self.sp.recommendations(seed_tracks=seed_track, limit=max_recs_per_seed, **targets)
             if max_tracks_per_artist:
                 # if max_tracks_per_artist specified, cache artist data too for later filtering
@@ -197,7 +184,6 @@ class SpotipyWrapper:
     """
     Top Artists & Tracks
     """
-
     def get_top_recs(self, track_limit=50, time_range='short_term', max_recs_per_seed=5, max_tracks_per_artist=None):
         # gets the top up to max_recs_per_seed recommendations for each of a user's top recent songs
         top_tracks = self.get_top_tracks(track_limit, time_range)
