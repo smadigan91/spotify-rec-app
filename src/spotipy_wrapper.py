@@ -2,7 +2,7 @@ import spotipy
 key_attrs = ['danceability', 'energy', 'valence']
 other_attrs = ['key', 'mode']  # , 'acousticness', 'instrumentalness', 'speechiness', 'tempo', 'time_signature']
 seeds = ['spotify:track:6Yy9iylKlDwVuBnMEcmGYP']
-playlist_name = "playlist_name"
+default_playlist_name = "playlist_name"
 default_rec_limit = 15
 
 
@@ -79,6 +79,19 @@ class SpotipyWrapper:
                 rec_tracks.remove(track)
         return set(rec_tracks)
 
+    def get_recursive_recs(self, seed_tracks, max_recs_per_seed=5, depth=1, totals=None):
+        if not totals:
+            totals = set()
+        while depth > 0:
+            recs = set()
+            for track in seed_tracks:
+                track_recs = self.get_targeted_recs(seed_track=[track], rec_limit=max_recs_per_seed)
+                recs.update(track_recs)
+            totals.update(recs)
+            depth = depth - 1
+            self.get_recursive_recs(seed_tracks=recs, max_recs_per_seed=max_recs_per_seed, depth=depth, totals=totals)
+        return totals
+
     def get_songs_per_artist(self, rec_track_tuples_list, max_tracks_per_artist=None):
         """
         combs tracks to remove any more than max_tracks_per_artistt per artist
@@ -123,7 +136,7 @@ class SpotipyWrapper:
         self.sp.user_playlist_add_tracks(username, playlist_id, tracks)
     # creates a playlist given a set of track uris
 
-    def create_playlist(self, track_uris):
+    def create_playlist(self, track_uris, playlist_name=default_playlist_name):
         playlist_id = self.sp.user_playlist_create(self.user, playlist_name, public=True)['id']
         chunk_size = 100
         for i in range(0, len(track_uris), chunk_size):
@@ -181,22 +194,12 @@ class SpotipyWrapper:
                 rec_tracks.remove(track)
         self.create_playlist(track_uris=rec_tracks)
 
-    def create_radio_playlist(self, seed_tracks, max_recs_per_seed=5, depth=1, totals=None):
-        if not totals:
-            totals = set()
-        while depth > 0:
-            recs = set()
-            for track in seed_tracks:
-                track_recs = self.get_targeted_recs(seed_track=[track], rec_limit=max_recs_per_seed)
-                recs.update(track_recs)
-            totals.update(recs)
-            depth = depth - 1
-            totals.update(
-                self.create_radio_playlist(seed_tracks=recs, max_recs_per_seed=max_recs_per_seed, depth=depth, totals=totals))
-        if depth == 0:
-            return totals
-
-
+    def create_radio_playlist(self, seed_tracks, max_recs_per_seed=5, depth=1):
+        track = self.sp.track(seed_tracks[0])
+        track_title = track['name']
+        playlist_title = f"{track_title if len(seed_tracks) == 1 else track_title + ' etc.'} Radio"
+        recs = self.get_recursive_recs(seed_tracks=seed_tracks, max_recs_per_seed=max_recs_per_seed, depth=depth)
+        self.create_playlist(recs, playlist_title)
 
     """
     Top Artists & Tracks
