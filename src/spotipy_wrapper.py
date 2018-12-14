@@ -181,6 +181,23 @@ class SpotipyWrapper:
                 rec_tracks.remove(track)
         self.create_playlist(track_uris=rec_tracks)
 
+    def create_radio_playlist(self, seed_tracks, max_recs_per_seed=5, depth=1, totals=None):
+        if not totals:
+            totals = set()
+        while depth > 0:
+            recs = set()
+            for track in seed_tracks:
+                track_recs = self.get_targeted_recs(seed_track=[track], rec_limit=max_recs_per_seed)
+                recs.update(track_recs)
+            totals.update(recs)
+            depth = depth - 1
+            totals.update(
+                self.create_radio_playlist(seed_tracks=recs, max_recs_per_seed=max_recs_per_seed, depth=depth, totals=totals))
+        if depth == 0:
+            return totals
+
+
+
     """
     Top Artists & Tracks
     """
