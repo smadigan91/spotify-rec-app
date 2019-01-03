@@ -56,8 +56,8 @@ def do_callback(sp: SpotipyWrapper):
     # seed_playlist_id = '1rE0mogWXb3nX0szdJZRCm'
     # sp.create_similar_playlist(playlist_id=seed_playlist_id, max_recs_per_seed=30, max_tracks_per_artist=1)
     print('doing the thing')
-    seed_tracks = ['4eWIU1wbuWrcgQsDT3aH47']
-    sp.create_radio_playlist(seed_tracks=seed_tracks, max_recs_per_seed=5, depth=5)
+    seed_tracks = ['2jSzv2dAjd1pO0oIZOMKUK']
+    sp.create_radio_playlist(seed_tracks=seed_tracks, max_recs_per_seed=5, depth=4)
     print('done')
 
 
