@@ -1,7 +1,7 @@
 import spotipy
 import inspect
 key_attrs = ['danceability', 'energy', 'valence']
-other_attrs = ['key', 'mode']  # , 'acousticness', 'instrumentalness', 'speechiness', 'tempo', 'time_signature']
+other_attrs = ['key', 'mode', 'tempo']  # , 'acousticness', 'instrumentalness', 'speechiness', 'tempo', 'time_signature']
 seeds = ['spotify:track:6Yy9iylKlDwVuBnMEcmGYP']
 default_playlist_name = "playlist_name"
 default_rec_limit = 15
