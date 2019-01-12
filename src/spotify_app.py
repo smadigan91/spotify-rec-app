@@ -10,11 +10,11 @@ app = Flask(__name__)
 
 SPOTIFY_CLIENT_ID = os.environ['SPOTIFY_CLIENT_ID']
 SPOTIFY_CLIENT_SECRET = os.environ['SPOTIFY_CLIENT_SECRET']
-SPOTIFY_REDIRECT_URI = 'http://localhost:8080/'
+SPOTIFY_REDIRECT_URI = 'http://localhost:9090/'
 
 scope = 'playlist-modify-public user-top-read'
 user = os.environ['USERNAME']
-port = 8080
+port = 9090
 
 # pay attention to the scope you're passing here - look in spotify web api reference to see if its correct for the call
 sp_oauth = oauth2.SpotifyOAuth(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REDIRECT_URI, scope=scope)
@@ -56,8 +56,26 @@ def do_callback(sp: SpotipyWrapper):
     # seed_playlist_id = '1rE0mogWXb3nX0szdJZRCm'
     # sp.create_similar_playlist(playlist_id=seed_playlist_id, max_recs_per_seed=30, max_tracks_per_artist=1)
     print('doing the thing')
-    seed_tracks = ['2jSzv2dAjd1pO0oIZOMKUK']
-    sp.create_radio_playlist(seed_tracks=seed_tracks, max_recs_per_seed=5, depth=4)
+    playlist_id = '2vXlrPe65UAB9FTpHZmIIe'
+    sp.create_similar_playlist(playlist_id=playlist_id, max_recs_per_seed=15, max_tracks_per_artist=1,
+                               rec_func=sp.get_targeted_recs,
+                               playlist_name='max 0.5x as popular fresh grooves',
+                               target_popularity=True,
+                               max_popularity=True,
+                               popularity_scalar=0.5
+                               )
+    # sp.create_playlist(track_uris=sp.get_targeted_recs(seed_track=seed_tracks, target_popularity=True),
+    #                    playlist_name='Popularity True Default')
+    # sp.create_playlist(track_uris=sp.get_targeted_recs(seed_track=seed_tracks, target_popularity=False),
+    #                    playlist_name='Popularity False Default')
+    # sp.create_playlist(track_uris=sp.get_targeted_recs(seed_track=seed_tracks, target_popularity=True, min_popularity=True, popularity_scalar=3),
+    #                    playlist_name='Min 3x as popular')
+    # sp.create_playlist(track_uris=sp.get_targeted_recs(seed_track=seed_tracks, target_popularity=True, popularity_scalar=0.5),
+    #                    playlist_name='Target 0.5x popular')
+    # sp.create_playlist(
+    #     track_uris=sp.get_targeted_recs(seed_track=seed_tracks, target_popularity=True, max_popularity=True, popularity_scalar=0.5),
+    #     playlist_name='Max 0.5x popular')
+    # sp.create_radio_playlist(seed_tracks=seed_tracks, max_recs_per_seed=5, depth=4)
     print('done')
 
 

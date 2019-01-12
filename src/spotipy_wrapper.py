@@ -1,4 +1,5 @@
 import spotipy
+import inspect
 key_attrs = ['danceability', 'energy', 'valence']
 other_attrs = ['key', 'mode']  # , 'acousticness', 'instrumentalness', 'speechiness', 'tempo', 'time_signature']
 seeds = ['spotify:track:6Yy9iylKlDwVuBnMEcmGYP']
@@ -14,7 +15,8 @@ class SpotipyWrapper:
         self.user = user
         self.sp = spotipy.Spotify(auth=access_token)
 
-    def get_targeted_recs(self, seed_track, rec_limit=default_rec_limit, max_tracks_per_artist=None):
+    def get_targeted_recs(self, seed_track, rec_limit=default_rec_limit, max_tracks_per_artist=None,
+                          target_popularity=False, min_popularity=False, max_popularity=False, popularity_scalar=1):
         """
         uses target_* for each attribute
         :param seed_track: the track to generate recommendations from
@@ -25,13 +27,36 @@ class SpotipyWrapper:
         track_features = self.sp.audio_features(seed_track)[0]
         all_track_stats = {k: v for k, v in track_features.items() if (k in key_attrs or k in other_attrs)}
         targets = {f'target_{k}': v for k, v in all_track_stats.items()}
+        if target_popularity:
+            track = self.sp.track(track_id=track_features['id'])
+            popularity = track['popularity']
+            name = track['name']
+            popularity = float(popularity*popularity_scalar)
+            if popularity > 100:
+                print(f'popularity was over 100 ({popularity}) defaulting to 100')
+                popularity = 100
+            elif popularity < 1:
+                print(f'popularity was under 1 ({popularity}) defaulting to 1')
+                popularity = 1
+            if min_popularity:
+                targets['min_popularity'] = int(round(popularity))
+                print(f'min_popularity = {popularity} for {name}')
+            elif max_popularity:
+                targets['max_popularity'] = int(round(popularity))
+                print(f'max_popularity = {popularity} for {name}')
+            else:
+                targets['target_popularity'] = int(round(popularity))
+                print(f'target_popularity = {popularity} for {name}')
         recs = self.sp.recommendations(seed_tracks=seed_track, limit=rec_limit, **targets)
-        rec_tracks = self.extract_rec_tracks(recs, max_tracks_per_artist)
-        # remove the track(s) we're getting recommendations for
-        for track in seed_track:
-            if track in rec_tracks:
-                rec_tracks.remove(track)
-        return set(rec_tracks)
+        if inspect.stack()[1][3] == 'create_similar_playlist':
+            return recs
+        else:
+            rec_tracks = self.extract_rec_tracks(recs, max_tracks_per_artist)
+            # remove the track(s) we're getting recommendations for
+            for track in seed_track:
+                if track in rec_tracks:
+                    rec_tracks.remove(track)
+            return set(rec_tracks)
 
     def get_mixed_recs(self, seed_track, variance, rec_limit=default_rec_limit, max_tracks_per_artist=None):
         """
@@ -158,7 +183,8 @@ class SpotipyWrapper:
             track_uris.update(item['track']['uri'] for item in playlist['items'])
         return track_uris
 
-    def create_similar_playlist(self, playlist_id, max_recs_per_seed=5, max_tracks_per_artist=None, track_limit=None):
+    def create_similar_playlist(self, playlist_id, max_recs_per_seed=5, max_tracks_per_artist=None, track_limit=None,
+                                playlist_name=None, rec_func=None, **kwargs):
         """
         creates a playlist with tracks similar to those in a given playlist's
         :param playlist_id: the id of the seed playlist
@@ -173,10 +199,13 @@ class SpotipyWrapper:
         for track in playlist_tracks:
             seed_track = [track]
             # TODO register callback so filtering methtod isnt hardcoded
-            track_features = self.sp.audio_features(seed_track)[0]
-            all_track_stats = {k: v for k, v in track_features.items() if (k in key_attrs or k in other_attrs)}
-            targets = {f'target_{k}': v for k, v in all_track_stats.items()}
-            recs = self.sp.recommendations(seed_tracks=seed_track, limit=max_recs_per_seed, **targets)
+            if not rec_func:
+                track_features = self.sp.audio_features(seed_track)[0]
+                all_track_stats = {k: v for k, v in track_features.items() if (k in key_attrs or k in other_attrs)}
+                targets = {f'target_{k}': v for k, v in all_track_stats.items()}
+                recs = self.sp.recommendations(seed_tracks=seed_track, limit=max_recs_per_seed, **targets)
+            else:
+                recs = rec_func(seed_track, **kwargs)
             if max_tracks_per_artist:
                 # if max_tracks_per_artist specified, cache artist data too for later filtering
                 track_artist_tuples_list = self.extract_track_artist_tuples_list(recs)
@@ -192,7 +221,7 @@ class SpotipyWrapper:
         for track in playlist_tracks:
             if track in rec_tracks:
                 rec_tracks.remove(track)
-        self.create_playlist(track_uris=rec_tracks)
+        self.create_playlist(track_uris=rec_tracks, playlist_name=playlist_name)
 
     def create_radio_playlist(self, seed_tracks, max_recs_per_seed=5, depth=1):
         track = self.sp.track(seed_tracks[0])
