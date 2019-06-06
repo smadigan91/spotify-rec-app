@@ -56,13 +56,13 @@ def do_callback(sp: SpotipyWrapper):
     # seed_playlist_id = '1rE0mogWXb3nX0szdJZRCm'
     # sp.create_similar_playlist(playlist_id=seed_playlist_id, max_recs_per_seed=30, max_tracks_per_artist=1)
     print('doing the thing')
-    playlist_id = '2vXlrPe65UAB9FTpHZmIIe'
-    sp.create_similar_playlist(playlist_id=playlist_id, max_recs_per_seed=15, max_tracks_per_artist=1,
+    playlist_id = '3mDPMAlwzHMBuRt1LPgqF4'
+    sp.create_similar_playlist(playlist_id=playlist_id, max_recs_per_seed=100, max_tracks_per_artist=50,
                                rec_func=sp.get_targeted_recs,
-                               playlist_name='min 2x more popular fresh grooves',
-                               target_popularity=True,
-                               min_popularity=True,
-                               popularity_scalar=2
+                               playlist_name='vgs recs'
+                               # target_popularity=True
+                               # max_popularity=True,
+                               # max_popularity_override=50
                                )
     # sp.create_playlist(track_uris=sp.get_targeted_recs(seed_track=seed_tracks, target_popularity=True),
     #                    playlist_name='Popularity True Default')

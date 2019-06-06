@@ -1,8 +1,7 @@
 import spotipy
 import inspect
-key_attrs = ['danceability', 'energy', 'valence']
-other_attrs = ['key', 'mode', 'tempo']  # , 'acousticness', 'instrumentalness', 'speechiness', 'tempo', 'time_signature']
-seeds = ['spotify:track:6Yy9iylKlDwVuBnMEcmGYP']
+key_attrs = ['energy', 'valence', 'danceability']
+other_attrs = ['key', 'mode', 'tempo']# 'time_signature', 'acousticness', 'instrumentalness', 'speechiness']
 default_playlist_name = "playlist_name"
 default_rec_limit = 15
 
@@ -16,7 +15,8 @@ class SpotipyWrapper:
         self.sp = spotipy.Spotify(auth=access_token)
 
     def get_targeted_recs(self, seed_track, rec_limit=default_rec_limit, max_tracks_per_artist=None,
-                          target_popularity=False, min_popularity=False, max_popularity=False, popularity_scalar=1):
+                          target_popularity=False, min_popularity=False, max_popularity=False, popularity_scalar=1,
+                          min_popularity_override=None, max_popularity_override=None):
         """
         uses target_* for each attribute
         :param seed_track: the track to generate recommendations from
@@ -39,11 +39,17 @@ class SpotipyWrapper:
                 print(f'popularity was under 1 ({popularity}) defaulting to 1')
                 popularity = 1
             if min_popularity:
-                targets['min_popularity'] = int(round(popularity))
-                print(f'min_popularity = {popularity} for {name}')
+                if min_popularity_override:
+                    targets['min_popularity'] = int(round(min_popularity_override))
+                else:
+                    targets['min_popularity'] = int(round(popularity))
+                    print(f'min_popularity = {popularity} for {name}')
             elif max_popularity:
-                targets['max_popularity'] = int(round(popularity))
-                print(f'max_popularity = {popularity} for {name}')
+                if max_popularity_override:
+                    targets['max_popularity'] = int(round(max_popularity_override))
+                else:
+                    targets['max_popularity'] = int(round(popularity))
+                    print(f'max_popularity = {popularity} for {name}')
             else:
                 targets['target_popularity'] = int(round(popularity))
                 print(f'target_popularity = {popularity} for {name}')
@@ -205,7 +211,8 @@ class SpotipyWrapper:
                 targets = {f'target_{k}': v for k, v in all_track_stats.items()}
                 recs = self.sp.recommendations(seed_tracks=seed_track, limit=max_recs_per_seed, **targets)
             else:
-                recs = rec_func(seed_track, **kwargs)
+                recs = rec_func(seed_track, rec_limit=max_recs_per_seed, max_tracks_per_artist=max_tracks_per_artist,
+                                **kwargs)
             if max_tracks_per_artist:
                 # if max_tracks_per_artist specified, cache artist data too for later filtering
                 track_artist_tuples_list = self.extract_track_artist_tuples_list(recs)
