@@ -1,10 +1,12 @@
 import os
 import webbrowser
 import threading
+import json
 from spotipy import oauth2
 from flask import jsonify
 from flask import Flask, request
 from spotipy_wrapper import SpotipyWrapper
+from music_analysis import MusicAnalyzer
 
 app = Flask(__name__)
 
@@ -12,7 +14,7 @@ SPOTIFY_CLIENT_ID = os.environ['SPOTIFY_CLIENT_ID']
 SPOTIFY_CLIENT_SECRET = os.environ['SPOTIFY_CLIENT_SECRET']
 SPOTIFY_REDIRECT_URI = 'http://localhost:9090/'
 
-scope = 'playlist-modify-public user-top-read'
+scope = 'playlist-modify-public user-top-read user-library-read'
 user = os.environ['USERNAME']
 port = 9090
 
@@ -39,24 +41,27 @@ def index():
         if access_token:
             print("Successfully acquired access token! Now doing the thing with the stuff")
         try:
-            sp = SpotipyWrapper(user, access_token)
-            do_callback(sp)
+            ma = MusicAnalyzer(user, access_token)
+            data = do_ma_callback(ma)
+            return data
+            # sp = SpotipyWrapper(user, access_token)
+            # do_sp_callback(sp)
         except Exception:
             raise
-        return jsonify("nice")
+        # return jsonify("nice")
     else:
         return jsonify("not great honestly")
 
 
 # interesting code goes here
-def do_callback(sp: SpotipyWrapper):
+def do_sp_callback(sp: SpotipyWrapper):
     # get the top 5 recs for each of the top 100 tracks in the short term with two maximum songs per artist returned
     # rec_tracks = sp.get_top_recs(track_limit=100, time_range='long_term', max_recs_per_seed=5, max_tracks_per_artist=2)
     # sp.create_playlist(rec_tracks)
     # seed_playlist_id = '1rE0mogWXb3nX0szdJZRCm'
     # sp.create_similar_playlist(playlist_id=seed_playlist_id, max_recs_per_seed=30, max_tracks_per_artist=1)
     print('doing the thing')
-    playlist_id = '3mDPMAlwzHMBuRt1LPgqF4'
+    playlist_id = '1rE0mogWXb3nX0szdJZRCm'
     sp.create_similar_playlist(playlist_id=playlist_id, max_recs_per_seed=100, max_tracks_per_artist=50,
                                rec_func=sp.get_targeted_recs,
                                playlist_name='vgs recs'
@@ -77,6 +82,16 @@ def do_callback(sp: SpotipyWrapper):
     #     playlist_name='Max 0.5x popular')
     # sp.create_radio_playlist(seed_tracks=seed_tracks, max_recs_per_seed=5, depth=4)
     print('done')
+
+
+def do_ma_callback(ma: MusicAnalyzer):
+    print('doing the thing')
+    playlist_id = '3mvk6VQchnKTX0mwyLtIZb'
+    primary_attribute_group = 'genre'
+    result = ma.generate_playlist_analysis(playlist_id=playlist_id, primary_key_attribute=primary_attribute_group)
+    data = json.dumps(result)
+    print('done')
+    return data
 
 
 def html_for_login_button():
