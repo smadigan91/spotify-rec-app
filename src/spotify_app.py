@@ -94,4 +94,3 @@ if __name__ == '__main__':
     threading.Thread(target=app.run, args=('', port)).start()
     # app.run(host='', port=port)
     webbrowser.open(url=f'{SPOTIFY_REDIRECT_URI}auth', new=2, autoraise=True)
-
