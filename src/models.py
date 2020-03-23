@@ -25,7 +25,7 @@ class TrackFeatures:
         self.type: str = values.get("type", '')
 
 
-class ReccomendedTrack:
+class Track:
 
     class ArtistList(list):
 
