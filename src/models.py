@@ -5,23 +5,6 @@ class Track:
     """
     Response from Spotify's Tracks API
     """
-    class ArtistList(list):
-
-        class TrackArtist:
-
-            def __init__(self, values: dict = None):
-                values = values if values is not None else {}
-                self.href: str = values.get("href", '')
-                self.id: str = values.get("id", '')
-                self.name: str = values.get("name", '')
-                self.type: str = values.get("type", '')
-                self.uri: str = values.get("uri", '')
-
-        def __init__(self, values: list = None):
-            super().__init__()
-            values = values if values is not None else []
-            self[:] = [self.TrackArtist(value) for value in values]
-
     def __init__(self, values: dict = None):
         values = values if values is not None else {}
         self.artists = self.ArtistList(values=values.get("artists"))
@@ -37,36 +20,53 @@ class Track:
         self.type: str = values.get("type", '')
         self.uri: str = values.get("uri", '')
 
+    class ArtistList(list):
+
+        def __init__(self, values: list = None):
+            super().__init__()
+            values = values if values is not None else []
+            self[:] = [self.TrackArtist(value) for value in values]
+
+        class TrackArtist:
+
+            def __init__(self, values: dict = None):
+                values = values if values is not None else {}
+                self.href: str = values.get("href", '')
+                self.id: str = values.get("id", '')
+                self.name: str = values.get("name", '')
+                self.type: str = values.get("type", '')
+                self.uri: str = values.get("uri", '')
+
 
 class Artist:
     """
     Response from Spotify's Artists API
     """
-    class Images(list):
+    def __init__(self, values: dict = None):
+        values = values if values is not None else {}
+        self.genres: List[str] = values.get("genres", [])
+        self.href: str = values.get("href", '')
+        self.id: str = values.get("id", '')
+        self.images = self.ImageList(values=values.get("images"))
+        self.name: str = values.get("name", '')
+        self.popularity: int = values.get("popularity", 0)
+        self.type: str = values.get("type", '')
+        self.uri: str = values.get("uri", '')
 
-        class Items:
+    class ImageList(list):
+
+        def __init__(self, values: list = None):
+            super().__init__()
+            values = values if values is not None else []
+            self[:] = [self.Image(value) for value in values]
+
+        class Image:
 
             def __init__(self, values: dict = None):
                 values = values if values is not None else {}
                 self.height: int = values.get("height", 0)
                 self.url: str = values.get("url", '')
                 self.width: int = values.get("width", 0)
-
-        def __init__(self, values: list = None):
-            super().__init__()
-            values = values if values is not None else []
-            self[:] = [self.Items(value) for value in values]
-
-    def __init__(self, values: dict = None):
-        values = values if values is not None else {}
-        self.genres: List[str] = values.get("genres", [])
-        self.href: str = values.get("href", '')
-        self.id: str = values.get("id", '')
-        self.images = self.Images(values=values.get("images"))
-        self.name: str = values.get("name", '')
-        self.popularity: int = values.get("popularity", 0)
-        self.type: str = values.get("type", '')
-        self.uri: str = values.get("uri", '')
 
 
 class TrackAttributes:
@@ -108,7 +108,14 @@ class RecSpec:
     """
     Short for recommendation specification hehe
     """
+    def __init__(self, values: dict = None):
+        values = values if values is not None else {}
+        self.playlist_name = values.get('playlist_name', 'generated playlist')
+        self.seed = self.Seed(values=values.get("seed"))
+        self.parameters = self.Parameters(values=values.get("parameters"))
+
     class Seed:
+
         def __init__(self, values: dict = None):
             values = values if values is not None else {}
             self.playlist: str = values.get("playlist", '')
@@ -117,6 +124,13 @@ class RecSpec:
             self.genres: List[str] = values.get("genres", [])
 
     class Parameters:
+
+        def __init__(self, values: dict = None):
+            values = values if values is not None else {}
+            self.target = self.Target(values=values.get("target"))
+            self.min = self.Min(values=values.get("min"))
+            self.max = self.Max(values=values.get("max"))
+
         class Target:
             def __init__(self, values: dict = None):
                 values = values if values is not None else {}
@@ -133,14 +147,3 @@ class RecSpec:
             def __init__(self, values: dict = None):
                 values = values if values is not None else {}
                 self.track_attributes = TrackAttributes(values=values.get("track_attributes"))
-
-        def __init__(self, values: dict = None):
-            values = values if values is not None else {}
-            self.target = self.Target(values=values.get("target"))
-            self.min = self.Min(values=values.get("min"))
-            self.max = self.Max(values=values.get("max"))
-
-    def __init__(self, values: dict = None):
-        values = values if values is not None else {}
-        self.seed = self.Seed(values=values.get("seed"))
-        self.parameters = self.Parameters(values=values.get("parameters"))

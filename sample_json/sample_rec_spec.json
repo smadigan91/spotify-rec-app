@@ -1,4 +1,5 @@
 {
+  "playlist_name": "playlist name",
   "seed": {
     "playlist": "http://spotify.com/playlist/uri/or/id/or/url",
     "tracks": [
