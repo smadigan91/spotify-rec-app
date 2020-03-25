@@ -1,0 +1,69 @@
+{
+  "seed": {
+    "playlist": "http://spotify.com/playlist/uri/or/id/or/url",
+    "tracks": [
+      "uri1/id1/link1",
+      "uri2/id2/link2"
+    ],
+    "artists": [
+      "uri1/id1/link1",
+      "uri2/id2/link2"
+    ],
+    "genres": [
+      "genre1"
+    ]
+  },
+  "parameters": {
+    "target": {
+      "track_attributes": {
+        "duration_ms": 255349,
+        "key": 5,
+        "mode": 0,
+        "time_signature": 4,
+        "acousticness": 0.514,
+        "danceability": 0.735,
+        "energy": 0.578,
+        "instrumentalness": 0.0902,
+        "liveness": 0.159,
+        "speechiness": 0.0461,
+        "valence": 0.624,
+        "tempo": 98.002,
+        "popularity": 55
+      }
+    },
+    "min": {
+      "track_attributes": {
+        "duration_ms": 255349,
+        "key": 5,
+        "mode": 0,
+        "time_signature": 4,
+        "acousticness": 0.514,
+        "danceability": 0.735,
+        "energy": 0.578,
+        "instrumentalness": 0.0902,
+        "liveness": 0.159,
+        "speechiness": 0.0461,
+        "valence": 0.624,
+        "tempo": 98.002,
+        "popularity": 55
+      }
+    },
+    "max": {
+      "track_attributes": {
+        "duration_ms": 255349,
+        "key": 5,
+        "mode": 0,
+        "time_signature": 4,
+        "acousticness": 0.514,
+        "danceability": 0.735,
+        "energy": 0.578,
+        "instrumentalness": 0.0902,
+        "liveness": 0.159,
+        "speechiness": 0.0461,
+        "valence": 0.624,
+        "tempo": 98.002,
+        "popularity": 55
+      }
+    }
+  }
+}
