@@ -1,6 +1,6 @@
-# Spoticli
+# Spotify Recommender App
 
-As of now, this is just a runnable app (its not even command-line ready as the name implies lol I'll get there) for generating recommendations and recommended playlists in spotify, as well as fetching some user metadata that wouldn't otherwise be available. Currently it can create playlists given seed tracks and a few different recommendation techniques, generate a new playlist given an existing playlist as a seed, and fetch a user's top tracks/artists over a period of time.
+The initial plan here is to build a basic webapp that wraps Spotify's [recommendations API](https://developer.spotify.com/documentation/web-api/reference/browse/get-recommendations/), allowing anyone to easily tune how they would like their spotify recommendations to be generated, and generating a playlist in their account with the recommendations in it. The plan is to also allow more flexibility with how the recommendations are seeded, for example allowing the user to specify a playlist they want recommendations generated from.
 
 # Relevant Links
 https://developer.spotify.com/dashboard/
@@ -10,10 +10,6 @@ http://spotipy.readthedocs.io/en/latest/#api-reference
 
 # How to run locally
 
-Register your app with spotify [here](https://developer.spotify.com/dashboard/) to get the client id and secret. Then go to your app settings and set the redirect url to be http://localhost:9090/ (you can change the port if you want). Make sure you set the client id, secret, and your spotify username as environment variables before running the app.
+As long as you have a decrypted secrets file, you can run the app locally using docker-compose.
 
-Right now there's a couple different methods for getting recommendations (they produce fairly similar recommendations actually) as well as a method for creating a playlist given recommendations or a similar playlist given an existing playlist. All the action happens in the index() function for now.
-
-Depending on what you want to do, check the spotify web API reference to see if a different scope is required than the one currently hard-coded as 'scope'. Note that multiple scopes can be used at once so long as they are delimited by a space.
-
-To actually run it, pip install the requirements, make sure you have the proper environment variables set, and run spotify_app.py. The app should open up the auth url in your browser automatically, and you just click the "Login to Spotify" link to run the index() function. That's about it really.
+If you don't have a decrypted secrets file, you will first need to install [ansible-vault](https://docs.ansible.com/ansible/latest/user_guide/vault.html). Once you've installed it, you will need to ask Sean for the decryption key, and then you can decrypt secrets.yml.enc to the file secrets.yml.dec, which is what the docker-compose environment is expecting.
