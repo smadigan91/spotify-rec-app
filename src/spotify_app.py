@@ -23,20 +23,20 @@ SPOTIFY_CLIENT_SECRET = SPOTIFY_CLIENT_SECRET
 HOST = 'http://localhost'
 BASE_PORT = 8080
 BASE_URL = f'{HOST}:{BASE_PORT}'
-SPOTIFY_REDIRECT_URI = f'{BASE_URL}/'
+SPOTIFY_REDIRECT_URI = f'{BASE_URL}/auth'
 scope = 'playlist-modify-public user-top-read'
 
 # get username from initial auth code and initialize oauth and wrapper
 sp_oauth = oauth2.SpotifyOAuth(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REDIRECT_URI, scope=scope)
 
 
+@app.route("/index")
+def index():
+    return render_template('index.html', spotify_auth_url=get_spotify_oauth_url())
+
+
 @app.route("/auth")
 def auth():
-    return html_for_login_button()
-
-
-@app.route("/")
-def index():
     url = request.url
     code = sp_oauth.parse_response_code(url)
     if code:
