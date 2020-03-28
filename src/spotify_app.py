@@ -1,50 +1,82 @@
-import webbrowser
-import threading
-from spotify_auth import *
-from flask import jsonify
-from flask import Flask, request
-from spotipy_wrapper import SpotipyWrapper
+import logging as log
+from flask import Flask, request, jsonify, session, Response, render_template, redirect, url_for
+from flask_session import Session
+from datetime import timedelta
+from spotipy import oauth2
+from .spotipy_wrapper import SpotifyWrapper
+from .config import *
 
 app = Flask(__name__)
-sp_auth = SpotifyAuth()
+log.basicConfig(format='%(levelname)s: %(message)s', level=log.DEBUG)
+app.logger = log
+app.secret_key = SESSION_KEY
+SESSION_TYPE = 'redis'
+app.config['SESSION_TYPE'] = 'redis'
+app.config['SESSION_REDIS'] = get_redis_connection()
+sess = Session()
+sess.init_app(app)
+app.permanent_session_lifetime = timedelta(minutes=30)
 
-SPOTIFY_CLIENT_ID = os.environ['SPOTIFY_CLIENT_ID']
-SPOTIFY_CLIENT_SECRET = os.environ['SPOTIFY_CLIENT_SECRET']
-SPOTIFY_REDIRECT_URI = 'http://localhost:8080/'
-app_port = 8080
+SPOTIFY_CLIENT_ID = SPOTIFY_CLIENT_ID
+SPOTIFY_CLIENT_SECRET = SPOTIFY_CLIENT_SECRET
+# can only be run locally for now
+HOST = 'http://localhost'
+BASE_PORT = 8080
+BASE_URL = f'{HOST}:{BASE_PORT}'
+SPOTIFY_REDIRECT_URI = f'{BASE_URL}/auth'
+scope = 'playlist-modify-public user-top-read'
 
-# get cached token from redis, key by bose email or something, only prompt to log into spotify if not found in cache
+# get username from initial auth code and initialize oauth and wrapper
+sp_oauth = oauth2.SpotifyOAuth(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REDIRECT_URI, scope=scope)
+
+
+@app.route("/index")
+def index():
+    return render_template('index.html', spotify_auth_url=get_spotify_oauth_url())
 
 
 @app.route("/auth")
 def auth():
-    return html_for_login_button()
-
-
-@app.route("/")
-def index():
     url = request.url
-    code = url.split("?code=")[1].split("&")[0]
+    code = sp_oauth.parse_response_code(url)
     if code:
-        print("Fetching access token")
-        access_token = sp_auth.get_fresh_token(code)
+        log.info("Found Spotify auth code in Request URL! Trying to get valid access token...")
+        token_info = sp_oauth.get_access_token(code, check_cache=False)
+        access_token = token_info['access_token']
+        if access_token:
+            log.info("Successfully acquired access token! Saving it in the session")
+            set_session_token(access_token)
+            return redirect(f'{BASE_URL}{url_for("generate_recs")}')
+        else:
+            return jsonify("No access token found in spotify token info"), 500
+    else:
+        return jsonify("No auth code returned by spotify"), 500
+
+
+@app.route("/generate")
+def generate_recs():
+    access_token = get_session_token()
+    if not access_token:
+        log.error("Session has expired")
+        return jsonify("Session has expired"), 401
+    else:
+        log.info("Generating stuff")
         try:
-            sp = SpotipyWrapper(access_token)
+            sp = SpotifyWrapper(access_token)
             do_callback(sp)
         except Exception:
             raise
-        return jsonify("nice")
-    else:
-        return jsonify("not great honestly")
+        return jsonify("Looks like it worked, nice"), 200
 
 
-# interesting code goes here
-def do_callback(sp: SpotipyWrapper):
-    # get the top 5 recs for each of the top 100 tracks in the short term with two maximum songs per artist returned
-    # rec_tracks = sp.get_top_recs(track_limit=100, time_range='long_term', max_recs_per_seed=5, max_tracks_per_artist=2)
-    # sp.create_playlist(rec_tracks)
-    seed_playlist_id = 'playlist_id'
-    sp.create_similar_playlist(playlist_id=seed_playlist_id, max_recs_per_seed=5, max_tracks_per_artist=3)
+def do_callback(sp: SpotifyWrapper):
+    # this is just printing the tracks to my 'Best of Ween' playlist right now lol
+    log.info('doing the thing')
+    playlist_id = '5cgfIBf7Fc2iHcjIj2zMUe'
+    playlist_tracks = sp.get_playlist_tracks(playlist_id)
+    for track in playlist_tracks:
+        log.info(track.name)
+    log.info('done')
 
 
 def html_for_login_button():
@@ -54,11 +86,13 @@ def html_for_login_button():
 
 
 def get_spotify_oauth_url():
-    auth_url = sp_auth.get_authorize_url()
+    auth_url = sp_oauth.get_authorize_url()
     return auth_url
 
 
-if __name__ == '__main__':
-    threading.Thread(target=app.run, args=('', app_port)).start()
-    # app.run(host='', port=port)
-    webbrowser.open(url=f'{SPOTIFY_REDIRECT_URI}auth', new=2, autoraise=True)
+def get_session_token():
+    return session.get('access_token', None)
+
+
+def set_session_token(access_token):
+    session['access_token'] = access_token
