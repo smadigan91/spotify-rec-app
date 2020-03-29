@@ -26,7 +26,6 @@ BASE_URL = f'{HOST}:{BASE_PORT}'
 SPOTIFY_REDIRECT_URI = f'{BASE_URL}/auth'
 scope = 'playlist-modify-public user-top-read'
 
-# get username from initial auth code and initialize oauth and wrapper
 sp_oauth = oauth2.SpotifyOAuth(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REDIRECT_URI, scope=scope)
 
 
@@ -77,12 +76,6 @@ def do_callback(sp: SpotifyWrapper):
     for track in playlist_tracks:
         log.info(track.name)
     log.info('done')
-
-
-def html_for_login_button():
-    auth_url = get_spotify_oauth_url()
-    html_login_button = "<a href='" + auth_url + "'>Login to Spotify</a>"
-    return html_login_button
 
 
 def get_spotify_oauth_url():
