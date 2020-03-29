@@ -14,7 +14,7 @@
       "genre1"
     ]
   },
-  "parameters": {
+  "filters": {
     "target": {
       "track_attributes": {
         "duration_ms": 255349,
@@ -65,6 +65,10 @@
         "tempo": 98.002,
         "popularity": 55
       }
+    },
+    "custom": {
+      "max_tracks_per_artist": 5,
+      "rec_limit_per_playlist_track": 15
     }
   }
 }

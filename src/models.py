@@ -112,7 +112,7 @@ class RecSpec:
         values = values if values is not None else {}
         self.playlist_name = values.get('playlist_name', 'generated playlist')
         self.seed = self.Seed(values=values.get("seed"))
-        self.parameters = self.Parameters(values=values.get("parameters"))
+        self.parameters = self.Filters(values=values.get("filters"))
 
     class Seed:
 
@@ -123,13 +123,14 @@ class RecSpec:
             self.artists: List[str] = values.get("artists", [])
             self.genres: List[str] = values.get("genres", [])
 
-    class Parameters:
+    class Filters:
 
         def __init__(self, values: dict = None):
             values = values if values is not None else {}
             self.target = self.Target(values=values.get("target"))
             self.min = self.Min(values=values.get("min"))
             self.max = self.Max(values=values.get("max"))
+            self.custom = self.Custom(values=values.get("custom"))
 
         class Target:
             def __init__(self, values: dict = None):
@@ -147,3 +148,10 @@ class RecSpec:
             def __init__(self, values: dict = None):
                 values = values if values is not None else {}
                 self.track_attributes = TrackAttributes(values=values.get("track_attributes"))
+
+        class Custom:
+
+            def __init__(self, values: dict = None):
+                values = values if values is not None else {}
+                self.max_tracks_per_artist = values.get("max_tracks_per_artist")
+                self.rec_limit_per_playlist_track = values.get("rec_limit_per_playlist_track")
