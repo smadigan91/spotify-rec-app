@@ -30,10 +30,14 @@ scope = 'playlist-modify-public user-top-read'
 sp_oauth = oauth2.SpotifyOAuth(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REDIRECT_URI, scope=scope)
 
 
-@app.route("/index")
-def index():
-    return render_template('index.html', spotify_auth_url=get_spotify_oauth_url())
+@app.route("/login")
+def login():
+    return render_template('login.html')
 
+# TODO prevent refreshing on undefined route (like /page2) from borking app
+@app.route("/main")
+def main():
+    return render_template('main.html')
 
 @app.route("/auth")
 def auth():
