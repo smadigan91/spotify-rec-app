@@ -1,0 +1,56 @@
+{
+  "playlist_name": "test playlist name 2",
+  "recommendation_limit": 50,
+  "seed": {
+    "playlist": "spotify:playlist:4gyWY4o5xWaGJZGO1KHuhw"
+  },
+  "filters": {
+    "target": {
+      "track_attributes": {
+        "duration_ms": 255349,
+        "key": 5,
+        "mode": 0,
+        "acousticness": 0.514,
+        "danceability": 0.735,
+        "energy": 0.578,
+        "instrumentalness": 0.0902,
+        "liveness": 0.159,
+        "speechiness": 0.0461,
+        "valence": 0.624,
+        "tempo": 98.002,
+        "popularity": 55
+      }
+    },
+    "min": {
+      "track_attributes": {
+        "duration_ms": 255349,
+        "acousticness": 0.514,
+        "danceability": 0.735,
+        "energy": 0.578,
+        "instrumentalness": 0.0902,
+        "liveness": 0.159,
+        "speechiness": 0.0461,
+        "valence": 0.624,
+        "tempo": 98.002,
+        "popularity": 25
+      }
+    },
+    "max": {
+      "track_attributes": {
+        "duration_ms": 255349,
+        "acousticness": 0.514,
+        "danceability": 0.735,
+        "energy": 0.578,
+        "instrumentalness": 0.0902,
+        "liveness": 0.159,
+        "speechiness": 0.0461,
+        "valence": 0.624,
+        "tempo": 98.002,
+        "popularity": 70
+      }
+    },
+    "custom": {
+      "max_tracks_per_artist": 5
+    }
+  }
+}

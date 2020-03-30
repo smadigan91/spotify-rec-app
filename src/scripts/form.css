@@ -1,0 +1,53 @@
+[data-tip] {
+	position:relative;
+
+}
+[data-tip]:after {
+	display:none;
+	content:attr(data-tip);
+	position:absolute;
+	top:55px;
+	left:0px;
+	padding:5px 8px;
+	background:#1a1a1a;
+	color:#fff;
+	z-index:9;
+	font-size: 0.75em;
+	height:28px;
+	line-height:18px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+	white-space:nowrap;
+	word-wrap:normal;
+}
+[data-tip]:hover:before,
+[data-tip]:hover:after {
+	display:block;
+}
+body{
+
+	margin: 20px;
+	padding: 20px;
+
+	font-family: Arial;
+
+}
+
+.input{
+  margin-bottom: 25px
+}
+
+.input-title{
+  margin-top: 20px;
+}
+
+.attribute-description{
+  font-family:georgia,garamond,serif;
+  font-size:12px;
+  font-style:italic;
+}
+
+.attribute-title{
+  margin-top: 10px;
+}

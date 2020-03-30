@@ -1,17 +1,17 @@
 {
-  "playlist_name": "playlist name",
+  "playlist_name": "test playlist name 1",
+  "recommendation_limit": 50,
   "seed": {
-    "playlist": "http://spotify.com/playlist/uri/or/id/or/url",
     "tracks": [
-      "uri1/id1/link1",
-      "uri2/id2/link2"
+      "https://open.spotify.com/track/0pwObEOHolQZSldJ2q1wpy?si=fdH4gcKFSSuUl7oHDwM1_Q",
+      "spotify:track:6AioOohg4bQZFA4jIYQQ2r"
     ],
     "artists": [
-      "uri1/id1/link1",
-      "uri2/id2/link2"
+      "https://open.spotify.com/artist/2yEwvVSSSUkcLeSTNyHKh8?si=vPe9vedRSSKVX0i_rJl63Q",
+      "4DFhHyjvGYa9wxdHUjtDkc"
     ],
     "genres": [
-      "genre1"
+      "alternative"
     ]
   },
   "filters": {
@@ -20,24 +20,20 @@
         "duration_ms": 255349,
         "key": 5,
         "mode": 0,
-        "time_signature": 4,
-        "acousticness": 0.514,
+        "tempo": 98.002,
         "danceability": 0.735,
         "energy": 0.578,
+        "valence": 0.624,
+        "acousticness": 0.514,
+        "speechiness": 0.0461,
         "instrumentalness": 0.0902,
         "liveness": 0.159,
-        "speechiness": 0.0461,
-        "valence": 0.624,
-        "tempo": 98.002,
         "popularity": 55
       }
     },
     "min": {
       "track_attributes": {
         "duration_ms": 255349,
-        "key": 5,
-        "mode": 0,
-        "time_signature": 4,
         "acousticness": 0.514,
         "danceability": 0.735,
         "energy": 0.578,
@@ -46,15 +42,12 @@
         "speechiness": 0.0461,
         "valence": 0.624,
         "tempo": 98.002,
-        "popularity": 55
+        "popularity": 25
       }
     },
     "max": {
       "track_attributes": {
         "duration_ms": 255349,
-        "key": 5,
-        "mode": 0,
-        "time_signature": 4,
         "acousticness": 0.514,
         "danceability": 0.735,
         "energy": 0.578,
@@ -63,12 +56,11 @@
         "speechiness": 0.0461,
         "valence": 0.624,
         "tempo": 98.002,
-        "popularity": 55
+        "popularity": 70
       }
     },
     "custom": {
-      "max_tracks_per_artist": 5,
-      "rec_limit_per_playlist_track": 15
+      "max_tracks_per_artist": 5
     }
   }
 }

@@ -1,6 +1,16 @@
 from typing import List
 
 
+class ModelValidationException(Exception):
+
+    def __init(self, message):
+        super(ModelValidationException, self).__init__(message)
+
+    @property
+    def message(self):
+        return self.message
+
+
 class Track:
     """
     Response from Spotify's Tracks API
@@ -8,8 +18,9 @@ class Track:
     def __init__(self, values: dict = None):
         values = values if values is not None else {}
         self.artists = self.ArtistList(values=values.get("artists"))
-        self.disc_number: int = values.get("disc_number", 0)
-        self.duration_ms: int = values.get("duration_ms", 0)
+        self.artist_name = self.artists[0].name if self.artists else None
+        self.disc_number: int = values.get("disc_number")
+        self.duration_ms: int = values.get("duration_ms")
         self.explicit: bool = values.get("explicit", False)
         self.href: str = values.get("href", '')
         self.id: str = values.get("id", '')
@@ -19,6 +30,10 @@ class Track:
         self.track_number: int = values.get("track_number", 0)
         self.type: str = values.get("type", '')
         self.uri: str = values.get("uri", '')
+        self.effective_name = self.name + self.artist_name
+
+    def as_dict(self):
+        return self.__dict__
 
     class ArtistList(list):
 
@@ -26,6 +41,9 @@ class Track:
             super().__init__()
             values = values if values is not None else []
             self[:] = [self.TrackArtist(value) for value in values]
+
+        def as_dict(self):
+            return self.__dict__
 
         class TrackArtist:
 
@@ -36,6 +54,9 @@ class Track:
                 self.name: str = values.get("name", '')
                 self.type: str = values.get("type", '')
                 self.uri: str = values.get("uri", '')
+
+            def as_dict(self):
+                return self.__dict__
 
 
 class Artist:
@@ -53,12 +74,18 @@ class Artist:
         self.type: str = values.get("type", '')
         self.uri: str = values.get("uri", '')
 
+    def as_dict(self):
+        return self.__dict__
+
     class ImageList(list):
 
         def __init__(self, values: list = None):
             super().__init__()
             values = values if values is not None else []
             self[:] = [self.Image(value) for value in values]
+
+        def as_dict(self):
+            return self.__dict__
 
         class Image:
 
@@ -68,6 +95,9 @@ class Artist:
                 self.url: str = values.get("url", '')
                 self.width: int = values.get("width", 0)
 
+            def as_dict(self):
+                return self.__dict__
+
 
 class TrackAttributes:
     """
@@ -75,19 +105,21 @@ class TrackAttributes:
     """
     def __init__(self, values: dict = None):
         values = values if values is not None else {}
-        self.duration_ms: int = values.get("duration_ms", 0)
-        self.key: int = values.get("key", 0)
-        self.mode: int = values.get("mode", 0)
-        self.time_signature: int = values.get("time_signature", 0)
-        self.acousticness: float = values.get("acousticness", 0)
-        self.danceability: float = values.get("danceability", 0)
-        self.energy: float = values.get("energy", 0)
-        self.instrumentalness: float = values.get("instrumentalness", 0)
-        self.liveness: float = values.get("liveness", 0)
-        self.speechiness: float = values.get("speechiness", 0)
-        self.valence: float = values.get("valence", 0)
-        self.tempo: float = values.get("tempo", 0)
-        self.popularity: int = values.get("popularity", 0)
+        self.duration_ms: int = values.get("duration_ms", None)
+        self.key: int = values.get("key", None)
+        self.mode: int = values.get("mode", None)
+        self.acousticness: float = values.get("acousticness", None)
+        self.danceability: float = values.get("danceability", None)
+        self.energy: float = values.get("energy", None)
+        self.instrumentalness: float = values.get("instrumentalness", None)
+        self.liveness: float = values.get("liveness", None)
+        self.speechiness: float = values.get("speechiness", None)
+        self.valence: float = values.get("valence", None)
+        self.tempo: float = values.get("tempo", None)
+        self.popularity: int = values.get("popularity", None)
+
+    def as_dict(self):
+        return self.__dict__
 
 
 class TrackAudioFeatures:
@@ -103,6 +135,9 @@ class TrackAudioFeatures:
         self.analysis_url: str = values.get("analysis_url", '')
         self.type: str = values.get("type", '')
 
+    def as_dict(self):
+        return self.__dict__
+
 
 class RecSpec:
     """
@@ -111,17 +146,29 @@ class RecSpec:
     def __init__(self, values: dict = None):
         values = values if values is not None else {}
         self.playlist_name = values.get('playlist_name', 'generated playlist')
+        self.rec_limit = values.get('recommendation_limit', 100)
         self.seed = self.Seed(values=values.get("seed"))
-        self.parameters = self.Filters(values=values.get("filters"))
+        self.filters = self.Filters(values=values.get("filters"))
+
+    def as_dict(self):
+        return self.__dict__
 
     class Seed:
 
         def __init__(self, values: dict = None):
             values = values if values is not None else {}
-            self.playlist: str = values.get("playlist", '')
-            self.tracks: List[str] = values.get("tracks", [])
-            self.artists: List[str] = values.get("artists", [])
+            self.playlist: str = extract_resource_id(values.get("playlist", None))
+            self.tracks: List[str] = [extract_resource_id(track) for track in values.get("tracks", [])]
+            self.artists: List[str] = [extract_resource_id(artist) for artist in values.get("artists", [])]
             self.genres: List[str] = values.get("genres", [])
+            self.validate()
+
+        def validate(self):
+            if len(self.tracks) + len(self.artists) + len(self.genres) > 5:
+                raise ModelValidationException("There can only be 5 total combined seed tracks, artists, and genres")
+
+        def as_dict(self):
+            return self.__dict__
 
     class Filters:
 
@@ -132,10 +179,17 @@ class RecSpec:
             self.max = self.Max(values=values.get("max"))
             self.custom = self.Custom(values=values.get("custom"))
 
+        def as_dict(self):
+            return self.__dict__
+
         class Target:
+
             def __init__(self, values: dict = None):
                 values = values if values is not None else {}
                 self.track_attributes = TrackAttributes(values=values.get("track_attributes"))
+
+            def as_dict(self):
+                return self.__dict__
 
         class Min:
 
@@ -143,15 +197,32 @@ class RecSpec:
                 values = values if values is not None else {}
                 self.track_attributes = TrackAttributes(values=values.get("track_attributes"))
 
+            def as_dict(self):
+                return self.__dict__
+
         class Max:
 
             def __init__(self, values: dict = None):
                 values = values if values is not None else {}
                 self.track_attributes = TrackAttributes(values=values.get("track_attributes"))
 
+            def as_dict(self):
+                return self.__dict__
+
         class Custom:
 
             def __init__(self, values: dict = None):
                 values = values if values is not None else {}
                 self.max_tracks_per_artist = values.get("max_tracks_per_artist")
-                self.rec_limit_per_playlist_track = values.get("rec_limit_per_playlist_track")
+
+            def as_dict(self):
+                return self.__dict__
+
+
+def extract_resource_id(resource_uri):
+    resource_id = resource_uri
+    if "open.spotify.com" in resource_uri:
+        resource_id = resource_uri.split('/')[-1].split('?')[0]
+    if 'spotify:' in resource_uri:
+        resource_id = resource_uri.split(':')[2]
+    return resource_id

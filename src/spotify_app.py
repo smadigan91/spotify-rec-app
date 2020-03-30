@@ -5,6 +5,7 @@ from datetime import timedelta
 from spotipy import oauth2
 from .spotipy_wrapper import SpotifyWrapper
 from .config import *
+from .models import ModelValidationException, RecSpec
 
 app = Flask(__name__)
 log.basicConfig(format='%(levelname)s: %(message)s', level=log.DEBUG)
@@ -27,6 +28,21 @@ SPOTIFY_REDIRECT_URI = f'{BASE_URL}/auth'
 scope = 'playlist-modify-public user-top-read'
 
 sp_oauth = oauth2.SpotifyOAuth(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REDIRECT_URI, scope=scope)
+
+
+def default_exception_handler(exception):
+    exception_name = type(exception).__name__
+    log.error("{}: {} ".format(exception_name, exception), ex=exception)
+    return jsonify({'something went wrong': exception_name}), 400
+
+
+def validation_exception_handler(exception: ModelValidationException):
+    return jsonify({'error': exception.message}), 500
+
+
+app.register_error_handler(ModelValidationException, validation_exception_handler)
+app.register_error_handler(ModelValidationException, validation_exception_handler)
+app.register_error_handler(Exception, default_exception_handler)
 
 
 @app.route("/index")
@@ -52,30 +68,24 @@ def auth():
         return jsonify("No auth code returned by spotify"), 500
 
 
+@app.route("/form")
+def form():
+    return render_template('form.html', base_url=BASE_URL)
+
+
 @app.route("/generate")
 def generate_recs():
+    request_json = request.get_json(force=True, silent=False)
     access_token = get_session_token()
     if not access_token:
         log.error("Session has expired")
         return jsonify("Session has expired"), 401
     else:
         log.info("Generating stuff")
-        try:
-            sp = SpotifyWrapper(access_token)
-            do_callback(sp)
-        except Exception:
-            raise
+        rec_spec = RecSpec(request_json)
+        sp = SpotifyWrapper(access_token, log)
+        sp.generate_recommendations(rec_spec)
         return jsonify("Looks like it worked, nice"), 200
-
-
-def do_callback(sp: SpotifyWrapper):
-    # this is just printing the tracks to my 'Best of Ween' playlist right now lol
-    log.info('doing the thing')
-    playlist_id = '5cgfIBf7Fc2iHcjIj2zMUe'
-    playlist_tracks = sp.get_playlist_tracks(playlist_id)
-    for track in playlist_tracks:
-        log.info(track.name)
-    log.info('done')
 
 
 def get_spotify_oauth_url():
