@@ -146,7 +146,6 @@ class RecSpec:
     def __init__(self, values: dict = None):
         values = values if values is not None else {}
         self.playlist_name = values.get('playlist_name', 'generated playlist')
-        self.rec_limit = values.get('recommendation_limit', 100)
         self.seed = self.Seed(values=values.get("seed"))
         self.filters = self.Filters(values=values.get("filters"))
 
@@ -157,6 +156,7 @@ class RecSpec:
 
         def __init__(self, values: dict = None):
             values = values if values is not None else {}
+            self.rec_limit = values.get('recommendation_limit', 100)
             self.playlist: str = extract_resource_id(values.get("playlist", None))
             self.tracks: List[str] = [extract_resource_id(track) for track in values.get("tracks", [])]
             self.artists: List[str] = [extract_resource_id(artist) for artist in values.get("artists", [])]

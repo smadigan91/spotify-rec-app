@@ -78,48 +78,58 @@ class SpotifyWrapper:
             self.log.info(f"Filtering by max tracks per artist filtered out {rec_size_before - len(rec_tracks)} tracks")
 
     def get_recommended_tracks(self, rec_spec: RecSpec):
-        rec_tracks = set()
         seed = rec_spec.seed
-        limit = rec_spec.rec_limit
         filter_map = self.get_recommendation_filters(rec_spec.filters)
         self.log.info(f'Filters are: {filter_map}')
         if not seed.playlist:
-            self.log.info(f"Generating recommendations for {len(seed.genres)} seed genres, {len(seed.artists)} "
-                          f"seed artists, and {len(seed.tracks)} seed tracks")
-            if limit:
-                self.log.info(f"Limiting recommendation playlist size to {limit} tracks")
-            recommendations = self.sp.recommendations(seed_genres=seed.genres, seed_artists=seed.artists,
-                                                      seed_tracks=seed.tracks, limit=limit, **filter_map)
-            for rec_track in recommendations.get('tracks', []):
-                # only add recommendations that didnt appear in the seed tracks
-                if rec_track not in seed.tracks:
-                    rec_tracks.add(Track(rec_track))
+            rec_tracks = self.get_default_recommendations(filter_map=filter_map, seed=seed)
         else:
-            playlist_name, playlist_tracks = self.get_playlist_tracks(playlist_id=seed.playlist)
-            # keep track of songs in the original playlist - we dont want them showing up in the recommendations
-            playlist_track_set = set()
-            for playlist_track in playlist_tracks:
-                playlist_track_set.add(playlist_track.effective_name)
-            self.log.info(f"Generating recommendations for playlist {playlist_name} ({len(playlist_tracks)} tracks) "
-                          f"with {len(seed.genres)} seed genres, {len(seed.artists)} seed artists, and "
-                          f"{len(seed.tracks)} seed tracks")
-            if limit:
-                self.log.info(f"Limiting recommendations to {limit} tracks per track in {playlist_name}, for a maximum"
-                              f"recommendation size of {limit*playlist_tracks}")
-            for track in playlist_tracks:
-                recommendations = self.sp.recommendations(seed_genres=seed.genres, seed_artists=seed.artists,
-                                                          seed_tracks=[track], limit=limit, **filter_map)
-                for track_to_add in recommendations.get('tracks', []):
-                    rec_track = Track(track_to_add)
-                    # only add tracks whose (name + artist name) is not present in the seed playlist
-                    if rec_track.effective_name not in playlist_track_set:
-                        rec_tracks.add(rec_track)
+            rec_tracks = self.get_playlist_recommendations(filter_map=filter_map, seed=seed)
         if rec_tracks:
             total_recs = len(rec_tracks)
             self.apply_custom_filters(rec_tracks=rec_tracks, custom_filters=rec_spec.filters.custom)
             self.log.info(f"Retrieved {total_recs} recommendations")
             if total_recs > MAX_PLAYLIST_SIZE:
                 raise SpotifyException('Generated more recommendations than the maximum playlist size will allow')
+        return rec_tracks
+
+    def get_default_recommendations(self, filter_map, seed: RecSpec.Seed):
+        rec_tracks = set()
+        limit = seed.rec_limit
+        self.log.info(f"Generating recommendations for {len(seed.genres)} seed genres, {len(seed.artists)} "
+                      f"seed artists, and {len(seed.tracks)} seed tracks")
+        if limit:
+            self.log.info(f"Limiting recommendation playlist size to {limit} tracks")
+        recommendations = self.sp.recommendations(seed_genres=seed.genres, seed_artists=seed.artists,
+                                                  seed_tracks=seed.tracks, limit=limit, **filter_map)
+        for rec_track in recommendations.get('tracks', []):
+            # only add recommendations that didnt appear in the seed tracks
+            if rec_track not in seed.tracks:
+                rec_tracks.add(Track(rec_track))
+        return rec_tracks
+
+    def get_playlist_recommendations(self, filter_map, seed: RecSpec.Seed):
+        rec_tracks = set()
+        limit = seed.rec_limit
+        playlist_name, playlist_tracks = self.get_playlist_tracks(playlist_id=seed.playlist)
+        # keep track of songs in the original playlist - we dont want them showing up in the recommendations
+        playlist_track_set = set()
+        for playlist_track in playlist_tracks:
+            playlist_track_set.add(playlist_track.effective_name)
+        self.log.info(f"Generating recommendations for playlist {playlist_name} ({len(playlist_tracks)} tracks) "
+                      f"with {len(seed.genres)} seed genres, {len(seed.artists)} seed artists, and "
+                      f"{len(seed.tracks)} seed tracks")
+        if limit:
+            self.log.info(f"Limiting recommendations to {limit} tracks per track in {playlist_name}, for a maximum"
+                          f"recommendation size of {limit * playlist_tracks}")
+        for track in playlist_tracks:
+            recommendations = self.sp.recommendations(seed_genres=seed.genres, seed_artists=seed.artists,
+                                                      seed_tracks=[track], limit=limit, **filter_map)
+            for track_to_add in recommendations.get('tracks', []):
+                rec_track = Track(track_to_add)
+                # only add tracks whose (name + artist name) is not present in the seed playlist
+                if rec_track.effective_name not in playlist_track_set:
+                    rec_tracks.add(rec_track)
         return rec_tracks
 
     def create_playlist(self, tracks, playlist_name):
