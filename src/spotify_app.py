@@ -32,7 +32,7 @@ sp_oauth = oauth2.SpotifyOAuth(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY
 
 @app.route("/login")
 def login():
-    return render_template('login.html')
+    return render_template('login.html', spotify_auth_url=get_spotify_oauth_url())
 
 # TODO prevent refreshing on undefined route (like /page2) from borking app
 @app.route("/main")
