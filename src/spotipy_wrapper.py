@@ -90,11 +90,17 @@ class SpotifyWrapper:
                 self.log.info(f"Limiting recommendation playlist size to {limit} tracks")
             recommendations = self.sp.recommendations(seed_genres=seed.genres, seed_artists=seed.artists,
                                                       seed_tracks=seed.tracks, limit=limit, **filter_map)
-            rec_tracks = set(Track(track) for track in recommendations.get('tracks', []))
+            for rec_track in recommendations.get('tracks', []):
+                # only add recommendations that didnt appear in the seed tracks
+                if rec_track not in seed.tracks:
+                    rec_tracks.add(Track(rec_track))
         else:
             playlist_name, playlist_tracks = self.get_playlist_tracks(playlist_id=seed.playlist)
-            playlist_size = len(playlist_tracks)
-            self.log.info(f"Generating recommendations for playlist {playlist_name} ({playlist_size} tracks) "
+            # keep track of songs in the original playlist - we dont want them showing up in the recommendations
+            playlist_track_set = set()
+            for playlist_track in playlist_tracks:
+                playlist_track_set.add(playlist_track.effective_name)
+            self.log.info(f"Generating recommendations for playlist {playlist_name} ({len(playlist_tracks)} tracks) "
                           f"with {len(seed.genres)} seed genres, {len(seed.artists)} seed artists, and "
                           f"{len(seed.tracks)} seed tracks")
             if limit:
@@ -103,7 +109,11 @@ class SpotifyWrapper:
             for track in playlist_tracks:
                 recommendations = self.sp.recommendations(seed_genres=seed.genres, seed_artists=seed.artists,
                                                           seed_tracks=[track], limit=limit, **filter_map)
-                rec_tracks.update([Track(track) for track in recommendations['tracks']])
+                for track_to_add in recommendations.get('tracks', []):
+                    rec_track = Track(track_to_add)
+                    # only add tracks whose (name + artist name) is not present in the seed playlist
+                    if rec_track.effective_name not in playlist_track_set:
+                        rec_tracks.add(rec_track)
         if rec_tracks:
             total_recs = len(rec_tracks)
             self.apply_custom_filters(rec_tracks=rec_tracks, custom_filters=rec_spec.filters.custom)
@@ -121,4 +131,5 @@ class SpotifyWrapper:
 
     def generate_recommendations(self, rec_spec: RecSpec):
         rec_tracks = self.get_recommended_tracks(rec_spec)
-        self.create_playlist(rec_tracks, rec_spec.playlist_name)
+        rec_track_ids = [rec_track.id for rec_track in rec_tracks]
+        self.create_playlist(rec_track_ids, rec_spec.playlist_name)
