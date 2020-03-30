@@ -1,7 +1,7 @@
 {
   "playlist_name": "test playlist name 1",
-  "recommendation_limit": 50,
   "seed": {
+    "recommendation_limit": 50,
     "tracks": [
       "https://open.spotify.com/track/0pwObEOHolQZSldJ2q1wpy?si=fdH4gcKFSSuUl7oHDwM1_Q",
       "spotify:track:6AioOohg4bQZFA4jIYQQ2r"

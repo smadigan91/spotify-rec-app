@@ -77,22 +77,6 @@ class SpotifyWrapper:
             rec_tracks = filter_max_tracks_per_artist(custom_filters.max_tracks_per_artist)
             self.log.info(f"Filtering by max tracks per artist filtered out {rec_size_before - len(rec_tracks)} tracks")
 
-    def get_recommended_tracks(self, rec_spec: RecSpec):
-        seed = rec_spec.seed
-        filter_map = self.get_recommendation_filters(rec_spec.filters)
-        self.log.info(f'Filters are: {filter_map}')
-        if not seed.playlist:
-            rec_tracks = self.get_default_recommendations(filter_map=filter_map, seed=seed)
-        else:
-            rec_tracks = self.get_playlist_recommendations(filter_map=filter_map, seed=seed)
-        if rec_tracks:
-            total_recs = len(rec_tracks)
-            self.apply_custom_filters(rec_tracks=rec_tracks, custom_filters=rec_spec.filters.custom)
-            self.log.info(f"Retrieved {total_recs} recommendations")
-            if total_recs > MAX_PLAYLIST_SIZE:
-                raise SpotifyException('Generated more recommendations than the maximum playlist size will allow')
-        return rec_tracks
-
     def get_default_recommendations(self, filter_map, seed: RecSpec.Seed):
         rec_tracks = set()
         limit = seed.rec_limit
@@ -130,6 +114,22 @@ class SpotifyWrapper:
                 # only add tracks whose (name + artist name) is not present in the seed playlist
                 if rec_track.effective_name not in playlist_track_set:
                     rec_tracks.add(rec_track)
+        return rec_tracks
+
+    def get_recommended_tracks(self, rec_spec: RecSpec):
+        seed = rec_spec.seed
+        filter_map = self.get_recommendation_filters(rec_spec.filters)
+        self.log.info(f'Filters are: {filter_map}')
+        if not seed.playlist:
+            rec_tracks = self.get_default_recommendations(filter_map=filter_map, seed=seed)
+        else:
+            rec_tracks = self.get_playlist_recommendations(filter_map=filter_map, seed=seed)
+        if rec_tracks:
+            total_recs = len(rec_tracks)
+            self.apply_custom_filters(rec_tracks=rec_tracks, custom_filters=rec_spec.filters.custom)
+            self.log.info(f"Retrieved {total_recs} recommendations")
+            if total_recs > MAX_PLAYLIST_SIZE:
+                raise SpotifyException('Generated more recommendations than the maximum playlist size will allow')
         return rec_tracks
 
     def create_playlist(self, tracks, playlist_name):

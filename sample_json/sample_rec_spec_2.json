@@ -1,7 +1,7 @@
 {
   "playlist_name": "test playlist name 2",
-  "recommendation_limit": 50,
   "seed": {
+    "recommendation_limit": 50,
     "playlist": "spotify:playlist:4gyWY4o5xWaGJZGO1KHuhw"
   },
   "filters": {
