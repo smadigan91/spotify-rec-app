@@ -56,6 +56,9 @@ def auth():
     else:
         return jsonify("No auth code returned by spotify"), 500
 
+@app.route("/getSomeData")
+def getSomeData():
+    return jsonify("SOME DATAAA"), 200
 
 @app.route("/generate")
 def generate_recs():
