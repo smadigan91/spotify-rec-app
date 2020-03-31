@@ -11,14 +11,6 @@ SPOTIFY_CLIENT_SECRET = os.environ.get('SPOTIFY_CLIENT_SECRET')
 if not SPOTIFY_CLIENT_SECRET:
     raise RuntimeError("Required environment variable SPOTIFY_CLIENT_SECRET is not defined")
 
-USERNAME = os.environ.get('USERNAME')
-if not USERNAME:
-    raise RuntimeError("Required environment variable USERNAME is not defined")
-
-SPOTIPY_CLIENT_USERNAME = os.environ.get('SPOTIPY_CLIENT_USERNAME')
-if not SPOTIPY_CLIENT_USERNAME:
-    raise RuntimeError("Required environment variable SPOTIPY_CLIENT_USERNAME is not defined")
-
 REDIS_HOST = os.environ.get('REDIS_HOST')
 if not REDIS_HOST:
     raise RuntimeError("Required environment variable REDIS_HOST is not defined")
