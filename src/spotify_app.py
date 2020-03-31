@@ -20,7 +20,6 @@ app.permanent_session_lifetime = timedelta(minutes=30)
 
 SPOTIFY_CLIENT_ID = SPOTIFY_CLIENT_ID
 SPOTIFY_CLIENT_SECRET = SPOTIFY_CLIENT_SECRET
-# can only be run locally for now
 SPOTIFY_REDIRECT_URI = f'{BASE_URL}/auth'
 scope = 'playlist-modify-public user-top-read'
 
