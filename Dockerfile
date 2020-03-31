@@ -6,3 +6,5 @@ RUN rm -rf /app
 ADD . /app/
 ENV APP_MODULE=src.spotify_app:app
 ENV PORT=8080
+
+CMD ["/start.sh"]
