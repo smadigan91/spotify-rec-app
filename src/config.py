@@ -3,6 +3,9 @@ import redis
 
 redis_connection = None
 
+BASE_URL = os.environ.get('BASE_URL', 'http://localhost:8080')
+
+
 SPOTIFY_CLIENT_ID = os.environ.get('SPOTIFY_CLIENT_ID')
 if not SPOTIFY_CLIENT_ID:
     raise RuntimeError("Required environment variable SPOTIFY_CLIENT_ID is not defined")

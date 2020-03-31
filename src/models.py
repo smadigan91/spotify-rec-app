@@ -159,6 +159,8 @@ class RecSpec:
         def __init__(self, values: dict = None):
             values = values if values is not None else {}
             self.rec_limit = values.get('recommendation_limit', 100)
+            if not self.rec_limit:
+                self.rec_limit = 100
             self.playlist: str = extract_resource_id(values.get("playlist", None))
             self.tracks: List[str] = list() if not values.get("tracks") else \
                 [extract_resource_id(track) for track in values.get("tracks")]

@@ -21,9 +21,6 @@ app.permanent_session_lifetime = timedelta(minutes=30)
 SPOTIFY_CLIENT_ID = SPOTIFY_CLIENT_ID
 SPOTIFY_CLIENT_SECRET = SPOTIFY_CLIENT_SECRET
 # can only be run locally for now
-HOST = 'http://localhost'
-BASE_PORT = 8080
-BASE_URL = f'{HOST}:{BASE_PORT}'
 SPOTIFY_REDIRECT_URI = f'{BASE_URL}/auth'
 scope = 'playlist-modify-public user-top-read'
 
@@ -80,6 +77,10 @@ def auth():
 
 @app.route("/form")
 def form():
+    access_token = get_session_token()
+    if not access_token:
+        log.info("Session has expired or does not exist, redirecting to login")
+        return redirect(f'{BASE_URL}{url_for("login")}')
     return render_template('form.html', base_url=BASE_URL)
 
 
