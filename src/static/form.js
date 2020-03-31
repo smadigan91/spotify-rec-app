@@ -148,20 +148,27 @@ function getMilliseconds(value) {
 function generateRecs(baseUrl) {
   seedTracks = getStringValue(document.getElementById("seed-tracks").value)
   if (seedTracks) {
-  	seedTracks = seedTracks.split(',')
+  	seedTracks = seedTracks.split(',').map(function(item) {
+      return item.trim();
+    });
   }
   seedArtists = getStringValue(document.getElementById("seed-artists").value)
   if (seedArtists) {
-  	seedArtists = seedArtists.split(',')
+  	seedArtists = seedArtists.split(',').map(function(item) {
+      return item.trim();
+    });
   }
   seedGenres = getStringValue(document.getElementById("seed-genres").value)
   if (seedGenres) {
-  	seedGenres = seedGenres.split(',')
+  	seedGenres = seedGenres.split(',').map(function(item) {
+      return item.trim();
+    });
   }
   var data = {
   	playlist_name: getStringValue(document.getElementById("playlist-name").value),
   	seed: {
       recommendation_limit: getIntValue(document.getElementById("rec-limit").value),
+      playlist: getStringValue(document.getElementById("seed-playlist").value),
       tracks: seedTracks,
       artists: seedArtists,
       genres: seedGenres

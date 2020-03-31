@@ -145,7 +145,9 @@ class RecSpec:
     """
     def __init__(self, values: dict = None):
         values = values if values is not None else {}
-        self.playlist_name = values.get('playlist_name', 'generated playlist')
+        self.playlist_name = values.get('playlist_name')
+        if not self.playlist_name:
+            self.playlist_name = "generated playlist"
         self.seed = self.Seed(values=values.get("seed"))
         self.filters = self.Filters(values=values.get("filters"))
 
@@ -158,9 +160,11 @@ class RecSpec:
             values = values if values is not None else {}
             self.rec_limit = values.get('recommendation_limit', 100)
             self.playlist: str = extract_resource_id(values.get("playlist", None))
-            self.tracks: List[str] = [extract_resource_id(track) for track in values.get("tracks", [])]
-            self.artists: List[str] = [extract_resource_id(artist) for artist in values.get("artists", [])]
-            self.genres: List[str] = values.get("genres", [])
+            self.tracks: List[str] = list() if not values.get("tracks") else \
+                [extract_resource_id(track) for track in values.get("tracks")]
+            self.artists: List[str] = list() if not values.get("artists") else \
+                [extract_resource_id(artist) for artist in values.get("artists", [])]
+            self.genres: List[str] = list() if not values.get("genres") else values.get("genres")
             self.validate()
 
         def validate(self):
@@ -221,8 +225,9 @@ class RecSpec:
 
 def extract_resource_id(resource_uri):
     resource_id = resource_uri
-    if "open.spotify.com" in resource_uri:
-        resource_id = resource_uri.split('/')[-1].split('?')[0]
-    if 'spotify:' in resource_uri:
-        resource_id = resource_uri.split(':')[2]
+    if resource_id:
+        if "open.spotify.com" in resource_uri:
+            resource_id = resource_uri.split('/')[-1].split('?')[0]
+        if 'spotify:' in resource_uri:
+            resource_id = resource_uri.split(':')[2]
     return resource_id

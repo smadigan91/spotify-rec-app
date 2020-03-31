@@ -32,17 +32,22 @@ sp_oauth = oauth2.SpotifyOAuth(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY
 
 def default_exception_handler(exception):
     exception_name = type(exception).__name__
-    log.error("{}: {} ".format(exception_name, exception), ex=exception)
-    return jsonify({'something went wrong': exception_name}), 400
+    log.error("{}: {} ".format(exception_name, exception), exc_info=True)
+    return jsonify({'something went wrong': exception_name}), 500
 
 
 def validation_exception_handler(exception: ModelValidationException):
-    return jsonify({'error': exception.message}), 500
+    return jsonify({'error': exception.message}), 400
 
 
 app.register_error_handler(ModelValidationException, validation_exception_handler)
 app.register_error_handler(ModelValidationException, validation_exception_handler)
 app.register_error_handler(Exception, default_exception_handler)
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return jsonify("page not found"), 404
 
 
 @app.route("/login")
@@ -66,7 +71,7 @@ def auth():
         if access_token:
             log.info("Successfully acquired access token! Saving it in the session")
             set_session_token(access_token)
-            return redirect(f'{BASE_URL}{url_for("generate_recs")}')
+            return redirect(f'{BASE_URL}{url_for("form")}')
         else:
             return jsonify("No access token found in spotify token info"), 500
     else:
@@ -78,7 +83,7 @@ def form():
     return render_template('form.html', base_url=BASE_URL)
 
 
-@app.route("/generate")
+@app.route("/generate", methods=['POST'])
 def generate_recs():
     request_json = request.get_json(force=True, silent=False)
     access_token = get_session_token()
@@ -86,7 +91,7 @@ def generate_recs():
         log.error("Session has expired")
         return jsonify("Session has expired"), 401
     else:
-        log.info("Generating stuff")
+        log.info(f"Request json: {request_json}")
         rec_spec = RecSpec(request_json)
         sp = SpotifyWrapper(access_token, log)
         sp.generate_recommendations(rec_spec)
