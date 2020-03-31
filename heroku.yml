@@ -2,3 +2,6 @@ build:
   docker:
     redis: redis/Dockerfile
     spotify-app: Dockerfile
+run:
+  redis: redis-server
+  spotify-app: /start.sh
