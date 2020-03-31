@@ -3,5 +3,5 @@ build:
     redis: redis/Dockerfile
     web: Dockerfile
 run:
-  redis: redis-server
+  redis: /docker-entrypoint.sh
   web: /start.sh
