@@ -57,126 +57,143 @@
       <h2>
           Filter Information
       </h2>
-      <h5 class="attribute-title">Danceability:</h5>
-      <a class="attribute-description">Describes how suitable a track is for dancing based on a combination of musical elements including tempo, rhythm stability, beat strength, and overall regularity. A value of 0.000 is least danceable and 1.000 is most danceable. </a>
+      <h5 class="attribute-title">Key:</h5>
+      <a class="attribute-description">The key of the track, values 0-11</a>
       <br>
       <a>target:</a>
-      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('target-danceability', this.value);"/>
-      <input type="text" size="5" id="target-danceability" value="" min="0" max="0" onchange="updateRangeInput('target-danceability', this.value);">
+      <input class="input" type="number" id="target-key" placeholder="0" min="0" max="11" onchange="getKey('target-key-display', this.value);">
+      <input class="input-field" type="text" size="30" id="target-key-display" value="" disabled><br>
       <a>min:</a>
-      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('min-danceability', this.value);"/>
-      <input type="text" size="5" id="min-danceability" value="" min="0" max="0" onchange="updateRangeInput('min-danceability', this.value);">
+      <input class="input" type="number" id="min-key" placeholder="0" min="0" max="11" onchange="getKey('min-key-display', this.value);">
+      <input class="input-field" type="text" size="30" id="min-key-display" value="" disabled><br>
       <a>max:</a>
-      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('max-danceability', this.value);"/>
-      <input type="text" size="5" id="max-danceability" value="" min="0" max="0" onchange="updateRangeInput('max-danceability', this.value);">
-
-      <h5 class="attribute-title">Energy:</h5>
-      <a class="attribute-description">A measure from 0.000 to 1.000 and represents a perceptual measure of intensity and activity. Typically, energetic tracks feel fast, loud, and noisy. For example, death metal has high energy, while a Bach prelude scores low on the scale. Perceptual features contributing to this attribute include dynamic range, perceived loudness, timbre, onset rate, and general entropy. </a>
-      <br>
-      <a>target:</a>
-      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('target-energy', this.value);"/>
-      <input type="text" size="5" id="target-energy" value="" min="0" max="0" onchange="updateRangeInput('target-energy', this.value);">
-      <a>min:</a>
-      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('min-energy', this.value);"/>
-      <input type="text" size="5" id="min-energy" value="" min="0" max="0" onchange="updateRangeInput('min-energy', this.value);">
-      <a>max:</a>
-      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('max-energy', this.value);"/>
-      <input type="text" size="5" id="max-energy" value="" min="0" max="0" onchange="updateRangeInput('max-energy', this.value);">
-
-      <h5 class="attribute-title">Valence:</h5>
-      <a class="attribute-description">A measure from 0.000 to 1.000 describing the musical positiveness conveyed by a track. Tracks with high valence sound more positive (e.g. happy, cheerful, euphoric), while tracks with low valence sound more negative (e.g. sad, depressed, angry). </a>
-      <br>
-      <a>target:</a>
-      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('target-valence', this.value);"/>
-      <input type="text" size="5" id="target-valence" value="" min="0" max="0" onchange="updateRangeInput('target-valence', this.value);">
-      <a>min:</a>
-      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('min-valence', this.value);"/>
-      <input type="text" size="5" id="min-valence" value="" min="0" max="0" onchange="updateRangeInput('min-valence', this.value);">
-      <a>max:</a>
-      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('max-valence', this.value);"/>
-      <input type="text" size="5" id="max-valence" value="" min="0" max="0" onchange="updateRangeInput('max-valence', this.value);">
-
-      <h5 class="attribute-title">Acousticness:</h5>
-      <a class="attribute-description">A confidence measure from 0.000 to 1.000 of whether the track is acoustic. 1.0 represents high confidence the track is acoustic. </a>
-      <br>
-      <a>target:</a>
-      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('target-acousticness', this.value);"/>
-      <input type="text" size="5" id="target-acousticness" value="" min="0" max="0" onchange="updateRangeInput('target-acousticness', this.value);">
-      <a>min:</a>
-      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('min-acousticness', this.value);"/>
-      <input type="text" size="5" id="min-acousticness" value="" min="0" max="0" onchange="updateRangeInput('min-acousticness', this.value);">
-      <a>max:</a>
-      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('max-acousticness', this.value);"/>
-      <input type="text" size="5" id="max-acousticness" value="" min="0" max="0" onchange="updateRangeInput('max-acousticness', this.value);">
-
-      <h5 class="attribute-title">Speechiness:</h5>
-      <a class="attribute-description">	Speechiness detects the presence of spoken words in a track. The more exclusively speech-like the recording (e.g. talk show, audio book, poetry), the closer to 1.0 the attribute value. Values above 0.66 describe tracks that are probably made entirely of spoken words. Values between 0.33 and 0.66 describe tracks that may contain both music and speech, either in sections or layered, including such cases as rap music. Values below 0.33 most likely represent music and other non-speech-like tracks. </a>
-      <br>
-      <a>target:</a>
-      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('target-speechiness', this.value);"/>
-      <input type="text" size="5" id="target-speechiness" value="" min="0" max="0" onchange="updateRangeInput('target-speechiness', this.value);">
-      <a>min:</a>
-      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('min-speechiness', this.value);"/>
-      <input type="text" size="5" id="min-speechiness" value="" min="0" max="0" onchange="updateRangeInput('min-speechiness', this.value);">
-      <a>max:</a>
-      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('max-speechiness', this.value);"/>
-      <input type="text" size="5" id="max-speechiness" value="" min="0" max="0" onchange="updateRangeInput('max-speechiness', this.value);">
-
-      <h5 class="attribute-title">Instrumentalness:</h5>
-      <a class="attribute-description">Predicts whether a track contains no vocals. “Ooh” and “aah” sounds are treated as instrumental in this context. Rap or spoken word tracks are clearly “vocal”. The closer the instrumentalness value is to 1.0, the greater likelihood the track contains no vocal content. Values above 0.5 are intended to represent instrumental tracks, but confidence is higher as the value approaches 1.0</a>
-      <br>
-      <a>target:</a>
-      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('target-instrumentalness', this.value);"/>
-      <input type="text" size="5" id="target-instrumentalness" value="" min="0" max="0" onchange="updateRangeInput('target-instrumentalness', this.value);">
-      <a>min:</a>
-      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('min-instrumentalness', this.value);"/>
-      <input type="text" size="5" id="min-instrumentalness" value="" min="0" max="0" onchange="updateRangeInput('min-instrumentalness', this.value);">
-      <a>max:</a>
-      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('max-instrumentalness', this.value);"/>
-      <input type="text" size="5" id="max-instrumentalness" value="" min="0" max="0" onchange="updateRangeInput('max-instrumentalness', this.value);">
-
-      <h5 class="attribute-title">Liveness:</h5>
-      <a class="attribute-description">	Detects the presence of an audience in the recording. Higher liveness values represent an increased probability that the track was performed live. A value above 0.8 provides strong likelihood that the track is live.</a>
-      <br>
-      <a>target:</a>
-      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('target-liveness', this.value);"/>
-      <input type="text" size="5" id="target-liveness" value="" min="0" max="0" onchange="updateRangeInput('target-liveness', this.value);">
-      <a>min:</a>
-      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('min-liveness', this.value);"/>
-      <input type="text" size="5" id="min-liveness" value="" min="0" max="0" onchange="updateRangeInput('min-liveness', this.value);">
-      <a>max:</a>
-      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('max-liveness', this.value);"/>
-      <input type="text" size="5" id="max-liveness" value="" min="0" max="0" onchange="updateRangeInput('max-liveness', this.value);">
+      <input class="input" type="number" id=max-key placeholder="0" min="0" max="11" onchange="getKey('max-key-display', this.value);">
+      <input class="input-field" type="text" size="30" id="max-key-display" value="" disabled><br>
 
       <h5 class="attribute-title">Duration:</h5>
       <a class="attribute-description">The duration of the track.</a>
       <br>
       <a>target:</a>
       <input class="input" type="range" name="points" min="0" max="600000" step="1000" onchange="updateRangeInput('target-duration', this.value);"/>
-      <input type="text" size="5" id="target-duration" value="" min="0" max="0" onchange="updateRangeInput('target-duration', this.value);">
+      <input class="input-field" type="text" size="5" id="target-duration" value="" min="0" max="0" onchange="updateRangeInput('target-duration', this.value);">
       <a>min:</a>
       <input class="input" type="range" name="points" min="0" max="600000" step="1000" onchange="updateRangeInput('min-duration', this.value);"/>
-      <input type="text" size="5" id="min-duration" value="" min="0" max="0" onchange="updateRangeInput('min-duration', this.value);">
+      <input class="input-field" type="text" size="5" id="min-duration" value="" min="0" max="0" onchange="updateRangeInput('min-duration', this.value);">
       <a>max:</a>
       <input class="input" type="range" name="points" min="0" max="600000" step="1000" onchange="updateRangeInput('max-duration', this.value);"/>
-      <input type="text" size="5" id="max-duration" value="" min="0" max="0" onchange="updateRangeInput('max-duration', this.value);">
+      <input class="input-field" type="text" size="5" id="max-duration" value="" min="0" max="0" onchange="updateRangeInput('max-duration', this.value);">
 
-      <h5 class="attribute-title">Key:</h5>
-      <a class="attribute-description">The key of the track, values 0-11</a>
+      <h5 class="attribute-title">Tempo:</h5>
+      <a class="attribute-description">The overall estimated tempo of a track in beats per minute (BPM). In musical terminology, tempo is the speed or pace of a given piece and derives directly from the average beat duration.</a>
       <br>
       <a>target:</a>
-      <input class="input" type="number" id="target-key" placeholder="0" min="0" max="11" onchange="getKey('target-key-display', this.value);">
-      <input type="text" size="30" id="target-key-display" value="" disabled><br>
+      <input class="input" type="range" name="points" min="0" max="250" step="5" onchange="updateRangeInput('target-tempo', this.value);"/>
+      <input class="input-field" type="text" size="5" id="target-tempo" value="" min="0" max="0" onchange="updateRangeInput('target-tempo', this.value);">
       <a>min:</a>
-      <input class="input" type="number" id="min-key" placeholder="0" min="0" max="11" onchange="getKey('min-key-display', this.value);">
-      <input type="text" size="30" id="min-key-display" value="" disabled><br>
+      <input class="input" type="range" name="points" min="0" max="250" step="5" onchange="updateRangeInput('min-tempo', this.value);"/>
+      <input class="input-field" type="text" size="5" id="min-tempo" value="" min="0" max="0" onchange="updateRangeInput('min-tempo', this.value);">
       <a>max:</a>
-      <input class="input" type="number" id=max-key placeholder="0" min="0" max="11" onchange="getKey('max-key-display', this.value);">
-      <input type="text" size="30" id="max-key-display" value="" disabled><br>
+      <input class="input" type="range" name="points" min="0" max="250" step="5" onchange="updateRangeInput('max-tempo', this.value);"/>
+      <input class="input-field" type="text" size="5" id="max-tempo" value="" min="0" max="0" onchange="updateRangeInput('max-tempo', this.value);">
+
+      <h5 class="attribute-title">Mode:</h5>
+      <a class="attribute-description">Mode indicates the modality (major or minor) of a track, the type of scale from which its melodic content is derived. Major is represented by 1 and minor is 0.</a>
+      <br>
+      <a>target:</a>
+      <input class="input" type="number" id="target-mode" min="0" max="1">
+
+      <h5 class="attribute-title">Danceability:</h5>
+      <a class="attribute-description">Describes how suitable a track is for dancing based on a combination of musical elements including tempo, rhythm stability, beat strength, and overall regularity. A value of 0.000 is least danceable and 1.000 is most danceable. </a>
+      <br>
+      <a>target:</a>
+      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('target-danceability', this.value);"/>
+      <input class="input-field" type="text" size="5" id="target-danceability" value="" min="0" max="0" onchange="updateRangeInput('target-danceability', this.value);">
+      <a>min:</a>
+      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('min-danceability', this.value);"/>
+      <input class="input-field" type="text" size="5" id="min-danceability" value="" min="0" max="0" onchange="updateRangeInput('min-danceability', this.value);">
+      <a>max:</a>
+      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('max-danceability', this.value);"/>
+      <input class="input-field" type="text" size="5" id="max-danceability" value="" min="0" max="0" onchange="updateRangeInput('max-danceability', this.value);">
+
+      <h5 class="attribute-title">Energy:</h5>
+      <a class="attribute-description">A measure from 0.000 to 1.000 and represents a perceptual measure of intensity and activity. Typically, energetic tracks feel fast, loud, and noisy. For example, death metal has high energy, while a Bach prelude scores low on the scale. Perceptual features contributing to this attribute include dynamic range, perceived loudness, timbre, onset rate, and general entropy. </a>
+      <br>
+      <a>target:</a>
+      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('target-energy', this.value);"/>
+      <input class="input-field" type="text" size="5" id="target-energy" value="" min="0" max="0" onchange="updateRangeInput('target-energy', this.value);">
+      <a>min:</a>
+      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('min-energy', this.value);"/>
+      <input class="input-field" type="text" size="5" id="min-energy" value="" min="0" max="0" onchange="updateRangeInput('min-energy', this.value);">
+      <a>max:</a>
+      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('max-energy', this.value);"/>
+      <input class="input-field" type="text" size="5" id="max-energy" value="" min="0" max="0" onchange="updateRangeInput('max-energy', this.value);">
+
+      <h5 class="attribute-title">Valence:</h5>
+      <a class="attribute-description">A measure from 0.000 to 1.000 describing the musical positiveness conveyed by a track. Tracks with high valence sound more positive (e.g. happy, cheerful, euphoric), while tracks with low valence sound more negative (e.g. sad, depressed, angry). </a>
+      <br>
+      <a>target:</a>
+      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('target-valence', this.value);"/>
+      <input class="input-field" type="text" size="5" id="target-valence" value="" min="0" max="0" onchange="updateRangeInput('target-valence', this.value);">
+      <a>min:</a>
+      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('min-valence', this.value);"/>
+      <input class="input-field" type="text" size="5" id="min-valence" value="" min="0" max="0" onchange="updateRangeInput('min-valence', this.value);">
+      <a>max:</a>
+      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('max-valence', this.value);"/>
+      <input class="input-field" type="text" size="5" id="max-valence" value="" min="0" max="0" onchange="updateRangeInput('max-valence', this.value);">
+
+      <h5 class="attribute-title">Acousticness:</h5>
+      <a class="attribute-description">A confidence measure from 0.000 to 1.000 of whether the track is acoustic. 1.0 represents high confidence the track is acoustic. </a>
+      <br>
+      <a>target:</a>
+      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('target-acousticness', this.value);"/>
+      <input class="input-field" type="text" size="5" id="target-acousticness" value="" min="0" max="0" onchange="updateRangeInput('target-acousticness', this.value);">
+      <a>min:</a>
+      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('min-acousticness', this.value);"/>
+      <input class="input-field" type="text" size="5" id="min-acousticness" value="" min="0" max="0" onchange="updateRangeInput('min-acousticness', this.value);">
+      <a>max:</a>
+      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('max-acousticness', this.value);"/>
+      <input class="input-field" type="text" size="5" id="max-acousticness" value="" min="0" max="0" onchange="updateRangeInput('max-acousticness', this.value);">
+
+      <h5 class="attribute-title">Speechiness:</h5>
+      <a class="attribute-description">	Speechiness detects the presence of spoken words in a track. The more exclusively speech-like the recording (e.g. talk show, audio book, poetry), the closer to 1.0 the attribute value. Values above 0.66 describe tracks that are probably made entirely of spoken words. Values between 0.33 and 0.66 describe tracks that may contain both music and speech, either in sections or layered, including such cases as rap music. Values below 0.33 most likely represent music and other non-speech-like tracks. </a>
+      <br>
+      <a>target:</a>
+      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('target-speechiness', this.value);"/>
+      <input class="input-field" type="text" size="5" id="target-speechiness" value="" min="0" max="0" onchange="updateRangeInput('target-speechiness', this.value);">
+      <a>min:</a>
+      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('min-speechiness', this.value);"/>
+      <input class="input-field" type="text" size="5" id="min-speechiness" value="" min="0" max="0" onchange="updateRangeInput('min-speechiness', this.value);">
+      <a>max:</a>
+      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('max-speechiness', this.value);"/>
+      <input class="input-field" type="text" size="5" id="max-speechiness" value="" min="0" max="0" onchange="updateRangeInput('max-speechiness', this.value);">
+
+      <h5 class="attribute-title">Instrumentalness:</h5>
+      <a class="attribute-description">Predicts whether a track contains no vocals. “Ooh” and “aah” sounds are treated as instrumental in this context. Rap or spoken word tracks are clearly “vocal”. The closer the instrumentalness value is to 1.0, the greater likelihood the track contains no vocal content. Values above 0.5 are intended to represent instrumental tracks, but confidence is higher as the value approaches 1.0</a>
+      <br>
+      <a>target:</a>
+      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('target-instrumentalness', this.value);"/>
+      <input class="input-field" type="text" size="5" id="target-instrumentalness" value="" min="0" max="0" onchange="updateRangeInput('target-instrumentalness', this.value);">
+      <a>min:</a>
+      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('min-instrumentalness', this.value);"/>
+      <input class="input-field" type="text" size="5" id="min-instrumentalness" value="" min="0" max="0" onchange="updateRangeInput('min-instrumentalness', this.value);">
+      <a>max:</a>
+      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('max-instrumentalness', this.value);"/>
+      <input class="input-field" type="text" size="5" id="max-instrumentalness" value="" min="0" max="0" onchange="updateRangeInput('max-instrumentalness', this.value);">
+
+      <h5 class="attribute-title">Liveness:</h5>
+      <a class="attribute-description">	Detects the presence of an audience in the recording. Higher liveness values represent an increased probability that the track was performed live. A value above 0.8 provides strong likelihood that the track is live.</a>
+      <br>
+      <a>target:</a>
+      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('target-liveness', this.value);"/>
+      <input class="input-field" type="text" size="5" id="target-liveness" value="" min="0" max="0" onchange="updateRangeInput('target-liveness', this.value);">
+      <a>min:</a>
+      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('min-liveness', this.value);"/>
+      <input class="input-field" type="text" size="5" id="min-liveness" value="" min="0" max="0" onchange="updateRangeInput('min-liveness', this.value);">
+      <a>max:</a>
+      <input class="input" type="range" name="points" min="0" max="1" step="0.001" onchange="updateRangeInput('max-liveness', this.value);"/>
+      <input class="input-field" type="text" size="5" id="max-liveness" value="" min="0" max="0" onchange="updateRangeInput('max-liveness', this.value);">
 
     </div>
-
       <a href="#" role="button" class="btn btn-primary" onclick="generateRecs('{{ base_url }}')">Generate</a>
-
   </body>
 </html>

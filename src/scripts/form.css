@@ -35,7 +35,11 @@ body{
 }
 
 .input{
-  margin-bottom: 25px
+  margin-bottom: 25px;
+}
+
+.input-field{
+  margin-right: 15px;
 }
 
 .input-title{
