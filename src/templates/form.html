@@ -58,16 +58,16 @@
           Filter Information
       </h2>
       <h5 class="attribute-title">Key:</h5>
-      <a class="attribute-description">The key of the track, values 1-12</a>
+      <a class="attribute-description">The key the track is in. Integers map to pitches using standard Pitch Class notation. E.g. 0 = C, 1 = C♯/D♭, 2 = D, and so on.</a>
       <br>
       <a>target:</a>
-      <input class="input" type="number" id="target-key" placeholder="0" min="0" max="12" onchange="updateRangeInput('target-key-display', this.value);">
+      <input class="input" type="number" id="target-key" placeholder="0" min="0" max="11" onchange="updateRangeInput('target-key-display', this.value);">
       <input class="input-field" type="text" size="30" id="target-key-display" value="" placeholder="None" disabled><br>
       <a>min:</a>
-      <input class="input" type="number" id="min-key" placeholder="0" min="0" max="12" onchange="updateRangeInput('min-key-display', this.value);">
+      <input class="input" type="number" id="min-key" placeholder="0" min="0" max="11" onchange="updateRangeInput('min-key-display', this.value);">
       <input class="input-field" type="text" size="30" id="min-key-display" value="" placeholder="None" disabled><br>
       <a>max:</a>
-      <input class="input" type="number" id=max-key placeholder="0" min="0" max="12" onchange="updateRangeInput('max-key-display', this.value);">
+      <input class="input" type="number" id=max-key placeholder="0" min="0" max="11" onchange="updateRangeInput('max-key-display', this.value);">
       <input class="input-field" type="text" size="30" id="max-key-display" value="" placeholder="None" disabled><br>
 
       <h5 class="attribute-title">Mode:</h5>
