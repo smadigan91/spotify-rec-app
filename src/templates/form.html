@@ -58,18 +58,41 @@
           Filter Information
       </h2>
       <h5 class="attribute-title">Key:</h5>
-      <a class="attribute-description">The key of the track, values 0-11</a>
+      <a class="attribute-description">The key of the track, values 1-12</a>
       <br>
       <a>target:</a>
-      <input class="input" type="number" id="target-key" placeholder="0" min="0" max="11" onchange="getKey('target-key-display', this.value);">
-      <input class="input-field" type="text" size="30" id="target-key-display" value="" disabled><br>
+      <input class="input" type="number" id="target-key" placeholder="0" min="0" max="12" onchange="updateRangeInput('target-key-display', this.value);">
+      <input class="input-field" type="text" size="30" id="target-key-display" value="" placeholder="None" disabled><br>
       <a>min:</a>
-      <input class="input" type="number" id="min-key" placeholder="0" min="0" max="11" onchange="getKey('min-key-display', this.value);">
-      <input class="input-field" type="text" size="30" id="min-key-display" value="" disabled><br>
+      <input class="input" type="number" id="min-key" placeholder="0" min="0" max="12" onchange="updateRangeInput('min-key-display', this.value);">
+      <input class="input-field" type="text" size="30" id="min-key-display" value="" placeholder="None" disabled><br>
       <a>max:</a>
-      <input class="input" type="number" id=max-key placeholder="0" min="0" max="11" onchange="getKey('max-key-display', this.value);">
-      <input class="input-field" type="text" size="30" id="max-key-display" value="" disabled><br>
+      <input class="input" type="number" id=max-key placeholder="0" min="0" max="12" onchange="updateRangeInput('max-key-display', this.value);">
+      <input class="input-field" type="text" size="30" id="max-key-display" value="" placeholder="None" disabled><br>
 
+      <h5 class="attribute-title">Mode:</h5>
+      <a class="attribute-description">Mode indicates the modality (major or minor) of a track, the type of scale from which its melodic content is derived. Major is represented by 1 and minor is 0.</a>
+      <br>
+      <a>target:</a>
+      <select class="input" id="target-mode">
+        <option value="None">None</option>
+        <option value="0">Minor</option>
+        <option value="1">Major</option>
+      </select>
+      
+      <h5 class="attribute-title">Popularity:</h5>
+      <a class="attribute-description">The popularity of the track. The value will be between 0 and 100, with 100 being the most popular. The popularity is calculated by algorithm and is based, in the most part, on the total number of plays the track has had and how recent those plays are.</a>
+      <br>
+      <a>target:</a>
+      <input class="input" type="range" name="points" min="0" max="100" step="1" onchange="updateRangeInput('target-popularity', this.value);"/>
+      <input class="input-field" type="text" size="5" id="target-popularity" value="" min="0" max="0" onchange="updateRangeInput('target-popularity', this.value);">
+      <a>min:</a>
+      <input class="input" type="range" name="points" min="0" max="100" step="1" onchange="updateRangeInput('min-popularity', this.value);"/>
+      <input class="input-field" type="text" size="5" id="min-popularity" value="" min="0" max="0" onchange="updateRangeInput('min-popularity', this.value);">
+      <a>max:</a>
+      <input class="input" type="range" name="points" min="0" max="100" step="1" onchange="updateRangeInput('max-popularity', this.value);"/>
+      <input class="input-field" type="text" size="5" id="max-popularity" value="" min="0" max="0" onchange="updateRangeInput('max-popularity', this.value);">
+      
       <h5 class="attribute-title">Duration:</h5>
       <a class="attribute-description">The duration of the track.</a>
       <br>
@@ -82,7 +105,7 @@
       <a>max:</a>
       <input class="input" type="range" name="points" min="0" max="600000" step="1000" onchange="updateRangeInput('max-duration', this.value);"/>
       <input class="input-field" type="text" size="5" id="max-duration" value="" min="0" max="0" onchange="updateRangeInput('max-duration', this.value);">
-
+      
       <h5 class="attribute-title">Tempo:</h5>
       <a class="attribute-description">The overall estimated tempo of a track in beats per minute (BPM). In musical terminology, tempo is the speed or pace of a given piece and derives directly from the average beat duration.</a>
       <br>
@@ -95,13 +118,7 @@
       <a>max:</a>
       <input class="input" type="range" name="points" min="0" max="250" step="5" onchange="updateRangeInput('max-tempo', this.value);"/>
       <input class="input-field" type="text" size="5" id="max-tempo" value="" min="0" max="0" onchange="updateRangeInput('max-tempo', this.value);">
-
-      <h5 class="attribute-title">Mode:</h5>
-      <a class="attribute-description">Mode indicates the modality (major or minor) of a track, the type of scale from which its melodic content is derived. Major is represented by 1 and minor is 0.</a>
-      <br>
-      <a>target:</a>
-      <input class="input" type="number" id="target-mode" min="0" max="1">
-
+      
       <h5 class="attribute-title">Danceability:</h5>
       <a class="attribute-description">Describes how suitable a track is for dancing based on a combination of musical elements including tempo, rhythm stability, beat strength, and overall regularity. A value of 0.000 is least danceable and 1.000 is most danceable. </a>
       <br>
@@ -194,6 +211,8 @@
       <input class="input-field" type="text" size="5" id="max-liveness" value="" min="0" max="0" onchange="updateRangeInput('max-liveness', this.value);">
 
     </div>
+
       <a href="#" role="button" class="btn btn-primary" onclick="generateRecs('{{ base_url }}')">Generate</a>
+
   </body>
 </html>

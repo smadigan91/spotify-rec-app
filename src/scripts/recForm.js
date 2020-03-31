@@ -1,7 +1,7 @@
 
 var pitchNotationMap = new Map([
   [0, "C/B♯, D double flat"],
-  [1, "C♯, D♭, also B double sharp"],
+  [1, "C♯, D♭, B double sharp"],
   [2, "D, C double sharp, E double flat"],
   [3, "D♯, E♭, F double flat"],
   [4, "E, D double sharp, F♭"],
@@ -37,7 +37,10 @@ function minutesAndSecondsToMillis(minSecs) {
 function updateRangeInput(id, val) {
   var idParts = id.split('-')
   var key = false
-  var display = pitchNotationMap.get(parseInt(val))
+  var keyDisplay = pitchNotationMap.get(parseInt(val))
+  if (!keyDisplay) {
+  	keyDisplay = "None"
+  }
   if (id.includes('duration')) {
     if (val.includes(":")) {
     	val = minutesAndSecondsToMillis(val)
@@ -52,7 +55,7 @@ function updateRangeInput(id, val) {
     clearValue('max-'+idParts[1])
     document.getElementById(id).value=val;
     if (key) {
-    	document.getElementById(id).value=display;
+    	document.getElementById(id).value=keyDisplay;
     	clearValue('min-'+idParts[1]+'-display')
       clearValue('max-'+idParts[1]+'-display')
     }
@@ -64,15 +67,15 @@ function updateRangeInput(id, val) {
         	document.getElementById(id).value=val;
         } else {
         	clearValue('target-'+idParts[1] +'-display')
-          document.getElementById('min-'+idParts[1] +'-display').value=display;
+          document.getElementById('min-'+idParts[1] +'-display').value=keyDisplay;
         }
     } else {
       max.value = val
     	if (!key) {
       	document.getElementById(id).value=val;
       } else {
-        document.getElementById('min-'+idParts[1] +'-display').value=display;
-        document.getElementById('max-'+idParts[1]+'-display').value=display;
+        document.getElementById('min-'+idParts[1] +'-display').value=keyDisplay;
+        document.getElementById('max-'+idParts[1]+'-display').value=keyDisplay;
       }
     }
   } else if (id.includes('max')) {
@@ -83,21 +86,16 @@ function updateRangeInput(id, val) {
       	document.getElementById(id).value=val;
       } else {
       	clearValue('target-'+idParts[1] +'-display')
-        document.getElementById('max-'+idParts[1] +'-display').value=display;
+        document.getElementById('max-'+idParts[1] +'-display').value=keyDisplay;
       }
     } else {
       min.value = val
     	if (!key) {
       	document.getElementById(id).value=val;
       } else {
-        document.getElementById('max-'+idParts[1]+'-display').value=display;
-        document.getElementById('min-'+idParts[1]+'-display').value=display;
+        document.getElementById('max-'+idParts[1]+'-display').value=keyDisplay;
+        document.getElementById('min-'+idParts[1]+'-display').value=keyDisplay;
       }
     }
   }
-}
-
-
-function getKey(id, val){
-  updateRangeInput(id, val)
 }
