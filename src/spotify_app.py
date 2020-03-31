@@ -5,6 +5,7 @@ from datetime import timedelta
 from spotipy import oauth2
 from .spotipy_wrapper import SpotifyWrapper
 from .config import *
+from .models import ModelValidationException, RecSpec
 
 app = Flask(__name__)
 log.basicConfig(format='%(levelname)s: %(message)s', level=log.DEBUG)
@@ -26,8 +27,27 @@ BASE_URL = f'{HOST}:{BASE_PORT}'
 SPOTIFY_REDIRECT_URI = f'{BASE_URL}/auth'
 scope = 'playlist-modify-public user-top-read'
 
-# get username from initial auth code and initialize oauth and wrapper
 sp_oauth = oauth2.SpotifyOAuth(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REDIRECT_URI, scope=scope)
+
+
+def default_exception_handler(exception):
+    exception_name = type(exception).__name__
+    log.error("{}: {} ".format(exception_name, exception), exc_info=True)
+    return jsonify({'something went wrong': exception_name}), 500
+
+
+def validation_exception_handler(exception: ModelValidationException):
+    return jsonify({'error': exception.message}), 400
+
+
+app.register_error_handler(ModelValidationException, validation_exception_handler)
+app.register_error_handler(ModelValidationException, validation_exception_handler)
+app.register_error_handler(Exception, default_exception_handler)
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return jsonify("page not found"), 404
 
 
 @app.route("/login")
@@ -38,6 +58,7 @@ def login():
 @app.route("/main")
 def main():
     return render_template('main.html')
+
 
 @app.route("/auth")
 def auth():
@@ -50,42 +71,31 @@ def auth():
         if access_token:
             log.info("Successfully acquired access token! Saving it in the session")
             set_session_token(access_token)
-            return redirect(f'{BASE_URL}{url_for("generate_recs")}')
+            return redirect(f'{BASE_URL}{url_for("form")}')
         else:
             return jsonify("No access token found in spotify token info"), 500
     else:
         return jsonify("No auth code returned by spotify"), 500
 
-@app.route("/generate")
+
+@app.route("/form")
+def form():
+    return render_template('form.html', base_url=BASE_URL)
+
+
+@app.route("/generate", methods=['POST'])
 def generate_recs():
+    request_json = request.get_json(force=True, silent=False)
     access_token = get_session_token()
     if not access_token:
         log.error("Session has expired")
         return jsonify("Session has expired"), 401
     else:
-        log.info("Generating stuff")
-        try:
-            sp = SpotifyWrapper(access_token)
-            do_callback(sp)
-        except Exception:
-            raise
+        log.info(f"Request json: {request_json}")
+        rec_spec = RecSpec(request_json)
+        sp = SpotifyWrapper(access_token, log)
+        sp.generate_recommendations(rec_spec)
         return jsonify("Looks like it worked, nice"), 200
-
-
-def do_callback(sp: SpotifyWrapper):
-    # this is just printing the tracks to my 'Best of Ween' playlist right now lol
-    log.info('doing the thing')
-    playlist_id = '5cgfIBf7Fc2iHcjIj2zMUe'
-    playlist_tracks = sp.get_playlist_tracks(playlist_id)
-    for track in playlist_tracks:
-        log.info(track.name)
-    log.info('done')
-
-
-def html_for_login_button():
-    auth_url = get_spotify_oauth_url()
-    html_login_button = "<a href='" + auth_url + "'>Login to Spotify</a>"
-    return html_login_button
 
 
 def get_spotify_oauth_url():
