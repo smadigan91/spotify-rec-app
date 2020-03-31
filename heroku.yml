@@ -1,0 +1,4 @@
+build:
+  docker:
+    redis: redis/Dockerfile
+    spotify-app: Dockerfile
