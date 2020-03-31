@@ -45,9 +45,14 @@ app.register_error_handler(ModelValidationException, validation_exception_handle
 app.register_error_handler(Exception, default_exception_handler)
 
 
-@app.route("/index")
-def index():
-    return render_template('index.html', spotify_auth_url=get_spotify_oauth_url())
+@app.route("/login")
+def login():
+    return render_template('login.html', spotify_auth_url=get_spotify_oauth_url())
+
+# TODO prevent refreshing on undefined route (like /page2) from borking app
+@app.route("/main")
+def main():
+    return render_template('main.html')
 
 
 @app.route("/auth")
