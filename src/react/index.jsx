@@ -33,7 +33,7 @@ function Main() {
 
     function getFromEndpoint() {
         console.log('fetching...');
-        fetch('http://localhost:8080/getSomeData')
+        fetch('http://localhost:8080/generate')
             .then(response => response.json())
             .then(data => alert(data));
     }
