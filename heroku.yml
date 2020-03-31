@@ -1,7 +1,7 @@
 build:
   docker:
     redis: redis/Dockerfile
-    spotify-app: Dockerfile
+    web: Dockerfile
 run:
   redis: redis-server
-  spotify-app: /start.sh
+  web: /start.sh
