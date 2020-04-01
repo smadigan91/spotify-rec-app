@@ -54,7 +54,7 @@ def login():
 # TODO prevent refreshing on undefined route (like /page2) from borking app
 @app.route("/main")
 def main():
-    return render_template('main.html')
+    return render_template('main.html', base_url=BASE_URL)
 
 
 @app.route("/auth")

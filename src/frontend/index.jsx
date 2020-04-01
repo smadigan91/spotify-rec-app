@@ -41,6 +41,7 @@ function Main() {
     return (
         <div>
             <div>My Flask React App!{count}</div>
+            <span>Base url: {window.base_url}</span>
             <button onClick={() => setCount(count + 1)}>count up</button>
             <button onClick={getFromEndpoint}>get data from endpoint</button>
             <button onClick={() => history.push("/page2")}>go to other page</button>

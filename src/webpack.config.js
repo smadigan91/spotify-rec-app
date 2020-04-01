@@ -1,6 +1,6 @@
 module.exports = {
     entry: [
-        './react/index.jsx'
+        './frontend/form.jsx'
     ],
     module: {
         rules: [
