@@ -20,7 +20,6 @@ app.permanent_session_lifetime = timedelta(minutes=30)
 
 SPOTIFY_CLIENT_ID = SPOTIFY_CLIENT_ID
 SPOTIFY_CLIENT_SECRET = SPOTIFY_CLIENT_SECRET
-# can only be run locally for now
 SPOTIFY_REDIRECT_URI = f'{BASE_URL}/auth'
 scope = 'playlist-modify-public user-top-read'
 
@@ -37,7 +36,6 @@ def validation_exception_handler(exception: ModelValidationException):
     return jsonify({'error': exception.message}), 400
 
 
-app.register_error_handler(ModelValidationException, validation_exception_handler)
 app.register_error_handler(ModelValidationException, validation_exception_handler)
 app.register_error_handler(Exception, default_exception_handler)
 
