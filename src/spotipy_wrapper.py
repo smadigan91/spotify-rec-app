@@ -107,7 +107,6 @@ class SpotifyWrapper:
         playlist_name, playlist_tracks = self.get_playlist_tracks(playlist_id=seed.playlist)
         # keep track of songs in the original playlist - we dont want them showing up in the recommendations
         playlist_track_set = set()
-        rec_track_set = set()
         for playlist_track in playlist_tracks:
             playlist_track_set.add(playlist_track.effective_name)
         self.log.info(f"Generating recommendations for playlist {playlist_name} ({len(playlist_tracks)} tracks) "
@@ -122,10 +121,9 @@ class SpotifyWrapper:
             for track_to_add in recommendations.get('tracks', []):
                 rec_track = Track(track_to_add)
                 # only add tracks whose (name + artist name) is not present in the seed playlist
-                # also don't add tracks whose (name + artist name) are already in the recommendations
-                if rec_track.effective_name not in playlist_track_set and rec_track.effective_name not in rec_track_set:
+                if rec_track.effective_name not in playlist_track_set:
                     rec_tracks.add(rec_track)
-                    rec_track_set.add(rec_track.effective_name)
+                    playlist_track_set.add(rec_track.effective_name)
         return rec_tracks
 
     def get_recommended_tracks(self, rec_spec: RecSpec):

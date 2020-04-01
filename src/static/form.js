@@ -231,7 +231,6 @@ function generateRecs(baseUrl) {
   xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
   xhr.send(JSON.stringify(data))
   xhr.onreadystatechange = processRequest
-  window.alert('Request submitted, processing...This could take a few seconds')
 
   function processRequest(e) {
     if (xhr.readyState == 4 && xhr.status == 200) {

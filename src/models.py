@@ -30,7 +30,7 @@ class Track:
         self.track_number: int = values.get("track_number", 0)
         self.type: str = values.get("type", '')
         self.uri: str = values.get("uri", '')
-        self.effective_name = self.name + self.artist_name
+        self.effective_name = self.name.lower() + self.artist_name.lower()
 
     def as_dict(self):
         return self.__dict__
