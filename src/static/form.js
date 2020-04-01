@@ -38,11 +38,11 @@ function updateRangeInput(id, val) {
   var key = false
   var keyDisplay = pitchNotationMap.get(parseInt(val))
   if (!keyDisplay) {
-  	keyDisplay = "None"
+    keyDisplay = "None"
   }
   if (id.includes('duration')) {
     if (val.includes(":")) {
-    	val = minutesAndSecondsToMillis(val)
+      val = minutesAndSecondsToMillis(val)
     }
     val = millisToMinutesAndSeconds(val);
   }
@@ -50,50 +50,50 @@ function updateRangeInput(id, val) {
     key = true
   }
   if (id.includes('target')) {
-    clearValue('min-'+idParts[1])
-    clearValue('max-'+idParts[1])
-    document.getElementById(id).value=val;
+    clearValue('min-' + idParts[1])
+    clearValue('max-' + idParts[1])
+    document.getElementById(id).value = val;
     if (key) {
-    	document.getElementById(id).value=keyDisplay;
-    	clearValue('min-'+idParts[1]+'-display')
-      clearValue('max-'+idParts[1]+'-display')
+      document.getElementById(id).value = keyDisplay;
+      clearValue('min-' + idParts[1] + '-display')
+      clearValue('max-' + idParts[1] + '-display')
     }
   } else if (id.includes('min')) {
-    clearValue('target-'+idParts[1])
-    var max = document.getElementById('max-'+idParts[1])
+    clearValue('target-' + idParts[1])
+    var max = document.getElementById('max-' + idParts[1])
     if (!max.value || parseFloat(max.value) > parseFloat(val)) {
-    		if (!key) {
-        	document.getElementById(id).value=val;
-        } else {
-        	clearValue('target-'+idParts[1] +'-display')
-          document.getElementById('min-'+idParts[1] +'-display').value=keyDisplay;
-        }
+      if (!key) {
+        document.getElementById(id).value = val;
+      } else {
+        clearValue('target-' + idParts[1] + '-display')
+        document.getElementById('min-' + idParts[1] + '-display').value = keyDisplay;
+      }
     } else {
       max.value = val
-    	if (!key) {
-      	document.getElementById(id).value=val;
+      if (!key) {
+        document.getElementById(id).value = val;
       } else {
-        document.getElementById('min-'+idParts[1] +'-display').value=keyDisplay;
-        document.getElementById('max-'+idParts[1]+'-display').value=keyDisplay;
+        document.getElementById('min-' + idParts[1] + '-display').value = keyDisplay;
+        document.getElementById('max-' + idParts[1] + '-display').value = keyDisplay;
       }
     }
   } else if (id.includes('max')) {
-    clearValue('target-'+idParts[1])
-    var min = document.getElementById('min-'+idParts[1])
+    clearValue('target-' + idParts[1])
+    var min = document.getElementById('min-' + idParts[1])
     if (!min.value || parseFloat(min.value) < parseFloat(val)) {
-    	if (!key) {
-      	document.getElementById(id).value=val;
+      if (!key) {
+        document.getElementById(id).value = val;
       } else {
-      	clearValue('target-'+idParts[1] +'-display')
-        document.getElementById('max-'+idParts[1] +'-display').value=keyDisplay;
+        clearValue('target-' + idParts[1] + '-display')
+        document.getElementById('max-' + idParts[1] + '-display').value = keyDisplay;
       }
     } else {
       min.value = val
-    	if (!key) {
-      	document.getElementById(id).value=val;
+      if (!key) {
+        document.getElementById(id).value = val;
       } else {
-        document.getElementById('max-'+idParts[1]+'-display').value=keyDisplay;
-        document.getElementById('min-'+idParts[1]+'-display').value=keyDisplay;
+        document.getElementById('max-' + idParts[1] + '-display').value = keyDisplay;
+        document.getElementById('min-' + idParts[1] + '-display').value = keyDisplay;
       }
     }
   }
@@ -101,72 +101,72 @@ function updateRangeInput(id, val) {
 
 function getStringValue(value) {
   if (value) {
-  	return ""+value
+    return "" + value
   } else {
-  	return null
+    return null
   }
 }
 
 function getIntValue(value) {
   intVal = parseInt(value)
   if (intVal) {
-  	return intVal
+    return intVal
   } else {
-  	return null
+    return null
   }
 }
 
 function getKeyOrMode(value) {
   if (value == "0") {
-  	return 0
+    return 0
   }
   intVal = parseInt(value)
   if (intVal) {
-  	return intVal
+    return intVal
   } else {
-  	return null
+    return null
   }
 }
 
 function getFloatValue(value) {
   floatVal = parseFloat(value)
   if (floatVal) {
-  	return floatVal
+    return floatVal
   } else {
-  	return null
+    return null
   }
 }
 
 function getMilliseconds(value) {
   if (value) {
-  	return minutesAndSecondsToMillis(value)
+    return minutesAndSecondsToMillis(value)
   } else {
-  	return null
+    return null
   }
 }
 
 function generateRecs(baseUrl) {
   seedTracks = getStringValue(document.getElementById("seed-tracks").value)
   if (seedTracks) {
-  	seedTracks = seedTracks.split(',').map(function(item) {
+    seedTracks = seedTracks.split(',').map(function(item) {
       return item.trim();
     });
   }
   seedArtists = getStringValue(document.getElementById("seed-artists").value)
   if (seedArtists) {
-  	seedArtists = seedArtists.split(',').map(function(item) {
+    seedArtists = seedArtists.split(',').map(function(item) {
       return item.trim();
     });
   }
   seedGenres = getStringValue(document.getElementById("seed-genres").value)
   if (seedGenres) {
-  	seedGenres = seedGenres.split(',').map(function(item) {
+    seedGenres = seedGenres.split(',').map(function(item) {
       return item.trim();
     });
   }
   var data = {
-  	playlist_name: getStringValue(document.getElementById("playlist-name").value),
-  	seed: {
+    playlist_name: getStringValue(document.getElementById("playlist-name").value),
+    seed: {
       recommendation_limit: getIntValue(document.getElementById("rec-limit").value),
       playlist: getStringValue(document.getElementById("seed-playlist").value),
       tracks: seedTracks,
@@ -220,7 +220,7 @@ function generateRecs(baseUrl) {
           liveness: getFloatValue(document.getElementById("max-liveness").value)
         }
       },
-     custom: {
+      custom: {
         max_tracks_per_artist: getIntValue(document.getElementById("max-tracks-per-artist").value)
       }
     }
@@ -231,19 +231,17 @@ function generateRecs(baseUrl) {
   xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
   xhr.send(JSON.stringify(data))
   xhr.onreadystatechange = processRequest
+  window.alert('Request submitted, processing...This could take a few seconds')
 
   function processRequest(e) {
     if (xhr.readyState == 4 && xhr.status == 200) {
-        window.alert('Success!')
+      window.alert('Success!')
+    } else if (xhr.readyState == 4 && xhr.status == 401) {
+      window.alert('Your session has expired!')
+    } else if (xhr.readyState == 4 && xhr.status == 500) {
+      window.alert('Something went wrong')
+    } else if (xhr.readyState == 4 && xhr.status != 201) {
+      window.alert('Something went wrong, status was: ' + xhr.status)
     }
-    else if (xhr.readyState == 4 && xhr.status == 401) {
-        window.alert('Your session has expired!')
-    }
-    else if (xhr.readyState == 4 && xhr.status == 500) {
-        window.alert('Something went wrong')
-    }
-    else if (xhr.readyState == 4 && xhr.status != 201) {
-        window.alert('Something went wrong, status was: ' + xhr.status)
-    }
-    }
+  }
 }
