@@ -67,6 +67,7 @@ class SpotifyWrapper:
                     artist_tracks = artist_track_map.get(artist_name)
                     if not artist_tracks:
                         artist_track_map[artist_name] = [track]
+                        track_set.add(track)
                     else:
                         if len(artist_tracks) < max_tracks_per_artist:
                             artist_track_map[artist_name].append(track)
