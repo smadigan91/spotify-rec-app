@@ -59,6 +59,7 @@ class SpotifyWrapper:
     def apply_custom_filters(self, rec_tracks: Set[Track], custom_filters: RecSpec.Filters.Custom):
 
         def filter_max_tracks_per_artist(max_tracks_per_artist):
+            track_set = set()
             if max_tracks_per_artist:
                 artist_track_map = {}
                 for track in rec_tracks:
@@ -69,7 +70,10 @@ class SpotifyWrapper:
                     else:
                         if len(artist_tracks) < max_tracks_per_artist:
                             artist_track_map[artist_name].append(track)
-                return set({x for v in artist_track_map.values() for x in v})
+                            track_set.add(track)
+                return track_set
+            else:
+                return rec_tracks
 
         if custom_filters.max_tracks_per_artist:
             rec_size_before = len(rec_tracks)
