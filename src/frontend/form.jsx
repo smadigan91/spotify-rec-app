@@ -1,4 +1,5 @@
 import React, {useState, useEffect} from 'react';
+import './form.css';
 import ReactDOM from 'react-dom';
 import {
     BrowserRouter as Router,
@@ -13,7 +14,7 @@ function App() {
         <Router>
             <div>
                 <Switch>
-                    <Route path="/main">
+                    <Route path="/form">
                         <Form />
                     </Route>
                 </Switch>
@@ -28,6 +29,12 @@ function Form() {
     return (
         <>
             <div id="root">
+                <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+                      integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+                      crossOrigin="anonymous"/>
+                <meta name="viewport" content="width=device-width, initial-scale=1"/>
+                <meta name="theme-color" content="#000000"/>
+                <title>Generate Recommendations</title>
                 <div data-tip="The title of the playlist to be generated">
                     <a>Playlist Name:</a><br/>
                     <input className="input" type="text" id="playlist-name" size="50" placeholder="My Recommendation Playlist"/><br/>
@@ -450,7 +457,7 @@ function getStringValue(value) {
 }
 
 function getIntValue(value) {
-    intVal = parseInt(value)
+    const intVal = parseInt(value)
     if (intVal) {
         return intVal
     } else {
@@ -462,7 +469,7 @@ function getKeyOrMode(value) {
     if (value == "0") {
         return 0
     }
-    intVal = parseInt(value)
+    const intVal = parseInt(value)
     if (intVal) {
         return intVal
     } else {
@@ -471,7 +478,7 @@ function getKeyOrMode(value) {
 }
 
 function getFloatValue(value) {
-    floatVal = parseFloat(value)
+    const floatVal = parseFloat(value)
     if (floatVal) {
         return floatVal
     } else {
@@ -488,19 +495,19 @@ function getMilliseconds(value) {
 }
 
 function generateRecs(baseUrl) {
-    seedTracks = getStringValue(document.getElementById("seed-tracks").value)
+    let seedTracks = getStringValue(document.getElementById("seed-tracks").value)
     if (seedTracks) {
         seedTracks = seedTracks.split(',').map(function(item) {
             return item.trim();
         });
     }
-    seedArtists = getStringValue(document.getElementById("seed-artists").value)
+    let seedArtists = getStringValue(document.getElementById("seed-artists").value)
     if (seedArtists) {
         seedArtists = seedArtists.split(',').map(function(item) {
             return item.trim();
         });
     }
-    seedGenres = getStringValue(document.getElementById("seed-genres").value)
+    let seedGenres = getStringValue(document.getElementById("seed-genres").value)
     if (seedGenres) {
         seedGenres = seedGenres.split(',').map(function(item) {
             return item.trim();
