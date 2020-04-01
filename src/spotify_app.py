@@ -37,7 +37,6 @@ def validation_exception_handler(exception: ModelValidationException):
 
 
 app.register_error_handler(ModelValidationException, validation_exception_handler)
-app.register_error_handler(ModelValidationException, validation_exception_handler)
 app.register_error_handler(Exception, default_exception_handler)
 
 
