@@ -51,12 +51,6 @@ def page_not_found(e):
 def login():
     return render_template('login.html', spotify_auth_url=get_spotify_oauth_url())
 
-# TODO prevent refreshing on undefined route (like /page2) from borking app
-@app.route("/main")
-def main():
-    return render_template('main.html')
-
-
 @app.route("/auth")
 def auth():
     url = request.url
