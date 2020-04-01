@@ -232,4 +232,6 @@ def extract_resource_id(resource_uri):
             resource_id = resource_uri.split('/')[-1].split('?')[0]
         if 'spotify:' in resource_uri:
             resource_id = resource_uri.split(':')[2]
+        if 'api.spotify.com' in resource_uri:
+            resource_id = resource_uri.split('/')[-1]
     return resource_id
