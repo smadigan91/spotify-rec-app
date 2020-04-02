@@ -178,7 +178,6 @@ function generateRecs(baseUrl) {
         track_attributes: {
           duration_ms: getMilliseconds(document.getElementById("target-duration").value),
           key: getKeyOrMode(document.getElementById("target-key").value),
-          mode: getKeyOrMode(document.getElementById("target-mode").value),
           popularity: getIntValue(document.getElementById("target-popularity").value),
           tempo: getIntValue(document.getElementById("target-tempo").value),
           danceability: getFloatValue(document.getElementById("target-danceability").value),
@@ -194,6 +193,7 @@ function generateRecs(baseUrl) {
         track_attributes: {
           duration_ms: getMilliseconds(document.getElementById("min-duration").value),
           key: getKeyOrMode(document.getElementById("min-key").value),
+          mode: getKeyOrMode(document.getElementById("target-mode").value),
           popularity: getIntValue(document.getElementById("min-popularity").value),
           tempo: getIntValue(document.getElementById("min-tempo").value),
           danceability: getFloatValue(document.getElementById("min-danceability").value),
@@ -209,6 +209,7 @@ function generateRecs(baseUrl) {
         track_attributes: {
           duration_ms: getMilliseconds(document.getElementById("max-duration").value),
           key: getKeyOrMode(document.getElementById("max-key").value),
+          mode: getKeyOrMode(document.getElementById("target-mode").value),
           popularity: getIntValue(document.getElementById("max-popularity").value),
           tempo: getIntValue(document.getElementById("max-tempo").value),
           danceability: getFloatValue(document.getElementById("max-danceability").value),
