@@ -239,7 +239,7 @@ function generateRecs(baseUrl) {
     } else if (xhr.readyState == 4 && xhr.status == 401) {
       window.alert('Your session has expired!')
     } else if (xhr.readyState == 4 && xhr.status == 500) {
-      window.alert('Invalid request, check parameters and try again or reach out to Sean for help (Did you supply any seeds? Too many?)')
+      window.alert('Invalid request, check parameters and try again or contact Sean for help (Did you supply any seeds? Too many?)')
     } else if (xhr.readyState == 4 && xhr.status != 201) {
       window.alert('Something went wrong, status was: ' + xhr.status)
     }
