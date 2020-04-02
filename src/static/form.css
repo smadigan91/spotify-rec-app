@@ -1,57 +1,208 @@
-[data-tip] {
-	position:relative;
-
+#mainDiv {
+  margin: auto;
+  width: 640px;
+  background: black;
+  color: white;
 }
-[data-tip]:after {
-	display:none;
-	content:attr(data-tip);
-	position:absolute;
-	top:55px;
-	left:0px;
-	padding:5px 8px;
-	background:#1a1a1a;
-	color:#fff;
-	z-index:9;
-	font-size: 0.75em;
-	height:28px;
-	line-height:18px;
-	-webkit-border-radius: 3px;
-	-moz-border-radius: 3px;
-	border-radius: 3px;
-	white-space:nowrap;
-	word-wrap:normal;
-}
-[data-tip]:hover:before,
-[data-tip]:hover:after {
-	display:block;
-}
-body{
 
-	margin: 20px;
-	padding: 20px;
 
-	font-family: Arial;
+* {
+  font-family: Arial, Helvetica, sans-serif;
+  color: white;
+}
+
+#outerDiv {
+  background-image: url(../static/bg.jpg);
+  background-attachment: scroll;
+}
+
+input {
+  height: 50px;
+  width: 100%;
+  color: white;
+  background: #4f4f4f;
+  outline: none;
+  border-radius: 3px;
+  appearance: none;
+  border: none;
+  padding-left: 20px;
 
 }
 
-.input{
-  margin-bottom: 25px;
-}
-
-.input-field{
-  margin-right: 15px;
-}
-
-.input-title{
+.text {
+  padding-left: 25px;
   margin-top: 20px;
 }
 
-.attribute-description{
-  font-family:georgia,garamond,serif;
-  font-size:12px;
-  font-style:italic;
+.inline {
+  width: 250px;
+  float: right;
 }
 
-.attribute-title{
+.linear {
+  height: 75px;
+}
+
+
+
+input[type=range] {
+  height: 36px;
+  -webkit-appearance: none;
+  margin: 10px 0;
+  width: 100%;
+  background: none;
+}
+
+input[type=range]:focus {
+  outline: none;
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 10px;
+  cursor: pointer;
+  box-shadow: 0px 0px 0px #000000;
+  background: #9E9E9E;
+  border-radius: 16px;
+  border: 0px solid #000000;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  box-shadow: 0px 0px 0px #000000;
+  border: 0px solid #FF2626;
+  height: 30px;
+  width: 30px;
+  border-radius: 15px;
+  background: #1DB954;
+  cursor: pointer;
+  -webkit-appearance: none;
+  margin-top: -10px;
+}
+
+/* input[type=range]:focus::-webkit-slider-runnable-track {
+  background: #9E9E9E;
+} */
+
+input[type=range]::-moz-range-track {
+  width: 100%;
+  height: 10px;
+  cursor: pointer;
+  box-shadow: 0px 0px 0px #000000;
+  background: #9E9E9E;
+  border-radius: 16px;
+  border: 0px solid #000000;
+}
+
+input[type=range]::-moz-range-thumb {
+  box-shadow: 0px 0px 0px #000000;
+  border: 0px solid #FF2626;
+  height: 30px;
+  width: 30px;
+  border-radius: 15px;
+  background: #1DB954;
+  cursor: pointer;
+}
+
+input[type=range]::-ms-track {
+  width: 100%;
+  height: 10px;
+  cursor: pointer;
+  animate: 0.2s;
+  background: transparent;
+  border-color: transparent;
+  color: transparent;
+}
+
+input[type=range]::-ms-fill-lower {
+  background: #9E9E9E;
+  border: 0px solid #000000;
+  border-radius: 32px;
+  box-shadow: 0px 0px 0px #000000;
+}
+
+input[type=range]::-ms-fill-upper {
+  background: #9E9E9E;
+  border: 0px solid #000000;
+  border-radius: 32px;
+  box-shadow: 0px 0px 0px #000000;
+}
+
+input[type=range]::-ms-thumb {
+  margin-top: 1px;
+  box-shadow: 0px 0px 0px #000000;
+  border: 0px solid #FF2626;
+  height: 30px;
+  width: 30px;
+  border-radius: 15px;
+  background: #1DB954;
+  cursor: pointer;
+}
+
+input[type=range]:focus::-ms-fill-lower {
+  background: #9E9E9E;
+}
+
+input[type=range]:focus::-ms-fill-upper {
+  background: #9E9E9E;
+}
+
+[data-tip] {
+  position: relative;
+
+}
+
+[data-tip]:after {
+  display: none;
+  content: attr(data-tip);
+  position: absolute;
+  top: 75px;
+  left: 0px;
+  padding: 5px 8px;
+  background: #1a1a1a;
+  color: #fff;
+  z-index: 9;
+  font-size: 0.75em;
+  height: 28px;
+  line-height: 18px;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+  white-space: nowrap;
+  word-wrap: normal;
+}
+
+[data-tip]:hover:before,
+[data-tip]:hover:after {
+  display: block;
+}
+
+body {
+  background-color: red;
+
+  margin: 20px;
+  padding: 20px;
+
+  font-family: Arial;
+
+}
+
+.input {
+  margin-bottom: 25px;
+}
+
+.input-field {
+  margin-right: 15px;
+}
+
+.input-title {
+  margin-top: 20px;
+}
+
+.attribute-description {
+  font-family: georgia, garamond, serif;
+  font-size: 16px;
+}
+
+.attribute-title {
   margin-top: 10px;
 }

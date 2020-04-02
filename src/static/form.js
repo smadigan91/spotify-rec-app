@@ -238,7 +238,7 @@ function generateRecs(baseUrl) {
     } else if (xhr.readyState == 4 && xhr.status == 401) {
       window.alert('Your session has expired!')
     } else if (xhr.readyState == 4 && xhr.status == 500) {
-      window.alert('Something went wrong')
+      window.alert('Invalid request, check parameters and try again')
     } else if (xhr.readyState == 4 && xhr.status != 201) {
       window.alert('Something went wrong, status was: ' + xhr.status)
     }
