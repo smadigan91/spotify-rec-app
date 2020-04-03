@@ -228,11 +228,11 @@ function generateRecs(baseUrl) {
   }
 
   var xhr = new XMLHttpRequest()
+  xhr.timeout = 120000
   xhr.open('POST', baseUrl + '/generate', true)
   xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
   xhr.send(JSON.stringify(data))
   xhr.onreadystatechange = processRequest
-  xhr.timeout = 120000
 
   function processRequest(e) {
     if (xhr.readyState == 4 && xhr.status == 200) {
@@ -241,6 +241,8 @@ function generateRecs(baseUrl) {
       window.alert('Your session has expired!')
     } else if (xhr.readyState == 4 && xhr.status == 500) {
       window.alert('Invalid request, check parameters and try again or contact Sean for help (Did you supply any seeds? Too many?)')
+    }  else if (xhr.readyState == 4 && xhr.status == 503) {
+      window.alert('Timed out trying to generate recommendations, but still probably fetching them, hang tight...')
     } else if (xhr.readyState == 4 && xhr.status != 201) {
       window.alert('Something went wrong, status was: ' + xhr.status)
     }
