@@ -1,7 +1,6 @@
 import json
 import multiprocessing
 import os
-import logging as log
 
 workers_per_core_str = os.getenv("WORKERS_PER_CORE", "2")
 web_concurrency_str = os.getenv("WEB_CONCURRENCY", "2")
@@ -43,4 +42,3 @@ log_data = {
     "port": port,
 }
 print(json.dumps(log_data))
-log.info(json.dumps(log_data))
