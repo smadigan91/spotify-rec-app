@@ -166,7 +166,7 @@ class RecSpec:
                 [extract_resource_id(track) for track in values.get("tracks")]
             self.artists: List[str] = list() if not values.get("artists") else \
                 [extract_resource_id(artist) for artist in values.get("artists", [])]
-            self.genres: List[str] = list() if not values.get("genres") else values.get("genres")
+            self.genres: List[str] = list() if not values.get("genres") else [genre.lower() for genre in values.get("genres", [])]
             self.validate()
 
         def validate(self):
