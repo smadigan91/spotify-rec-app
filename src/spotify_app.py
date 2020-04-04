@@ -4,6 +4,7 @@ from flask_session import Session
 from datetime import timedelta
 from spotipy import oauth2
 from .spotipy_wrapper import SpotifyWrapper
+from spotipy.client import SpotifyException
 from .config import *
 from .models import ModelValidationException, RecSpec
 
@@ -36,6 +37,12 @@ def validation_exception_handler(exception: ModelValidationException):
     return jsonify({'error': exception.message}), 400
 
 
+def spotify_exception_handler(exception: SpotifyException):
+    exception_name = type(exception).__name__
+    log.error("{}: {} ".format(exception_name, exception), exc_info=True)
+
+
+app.register_error_handler(SpotifyException, spotify_exception_handler)
 app.register_error_handler(ModelValidationException, validation_exception_handler)
 app.register_error_handler(Exception, default_exception_handler)
 

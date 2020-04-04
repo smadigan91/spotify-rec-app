@@ -178,7 +178,6 @@ function generateRecs(baseUrl) {
         track_attributes: {
           duration_ms: getMilliseconds(document.getElementById("target-duration").value),
           key: getKeyOrMode(document.getElementById("target-key").value),
-          mode: getKeyOrMode(document.getElementById("target-mode").value),
           popularity: getIntValue(document.getElementById("target-popularity").value),
           tempo: getIntValue(document.getElementById("target-tempo").value),
           danceability: getFloatValue(document.getElementById("target-danceability").value),
@@ -194,6 +193,7 @@ function generateRecs(baseUrl) {
         track_attributes: {
           duration_ms: getMilliseconds(document.getElementById("min-duration").value),
           key: getKeyOrMode(document.getElementById("min-key").value),
+          mode: getKeyOrMode(document.getElementById("target-mode").value),
           popularity: getIntValue(document.getElementById("min-popularity").value),
           tempo: getIntValue(document.getElementById("min-tempo").value),
           danceability: getFloatValue(document.getElementById("min-danceability").value),
@@ -209,6 +209,7 @@ function generateRecs(baseUrl) {
         track_attributes: {
           duration_ms: getMilliseconds(document.getElementById("max-duration").value),
           key: getKeyOrMode(document.getElementById("max-key").value),
+          mode: getKeyOrMode(document.getElementById("target-mode").value),
           popularity: getIntValue(document.getElementById("max-popularity").value),
           tempo: getIntValue(document.getElementById("max-tempo").value),
           danceability: getFloatValue(document.getElementById("max-danceability").value),
@@ -238,7 +239,9 @@ function generateRecs(baseUrl) {
     } else if (xhr.readyState == 4 && xhr.status == 401) {
       window.alert('Your session has expired!')
     } else if (xhr.readyState == 4 && xhr.status == 500) {
-      window.alert('Invalid request, check parameters and try again')
+      window.alert('Invalid request, check parameters and try again or contact Sean for help (Did you supply any seeds? Too many?)')
+    }  else if (xhr.readyState == 4 && xhr.status == 503) {
+      window.alert('Still trying to fetching recommendations, looks like there are a lot of them, hang a tight for a few more moments...')
     } else if (xhr.readyState == 4 && xhr.status != 201) {
       window.alert('Something went wrong, status was: ' + xhr.status)
     }
