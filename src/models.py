@@ -4,11 +4,12 @@ from typing import List
 class ModelValidationException(Exception):
 
     def __init(self, message):
+        self.__message = message
         super(ModelValidationException, self).__init__(message)
 
     @property
     def message(self):
-        return self.message
+        return self.__message
 
 
 class Track:
