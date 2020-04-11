@@ -3,8 +3,7 @@ from collections import namedtuple, OrderedDict
 from util import sort_dict_by_value, count_key
 from typing import List
 
-AverageAudioFeatures = namedtuple('AverageAudioFeatures', ['danceability', 'energy', 'speechiness',
-                                                           'acousticness', 'valence', 'tempo'])
+AverageAudioFeatures = namedtuple('AverageAudioFeatures', ['danceability', 'energy', 'valence', 'tempo'])
 Artist = namedtuple('Artist', ['name', 'genres'])
 
 primary_attribute_groups = ['scale', 'genre', 'artist']
@@ -43,9 +42,8 @@ class MusicAnalyzer:
         self.user = user
         self.sp = spotipy.Spotify(auth=access_token)
 
-    def generate_playlist_analysis(self, playlist_id, primary_key_attribute, use_strict_genres=False):
-        if use_strict_genres:
-            genres = self.sp.recommendation_genre_seeds()['genres']
+    def generate_playlist_analysis(self, playlist_id, primary_key_attribute):
+        genres = self.sp.recommendation_genre_seeds()['genres']
         playlist_response = self.sp.user_playlist(self.user, playlist_id)
         playlist_name = playlist_response['name']
         title = f"Breakdown of '{playlist_name}' by {primary_key_attribute}"
@@ -54,9 +52,8 @@ class MusicAnalyzer:
         results = self.crunch_numbers(primary_key_attribute, genre_list=genres)
         return {"title": title, "results": results}
 
-    def generate_user_analysis(self, primary_key_attribute, use_strict_genres=False):
-        if use_strict_genres:
-            genres = self.sp.recommendation_genre_seeds()['genres']
+    def generate_user_analysis(self, primary_key_attribute):
+        genres = self.sp.recommendation_genre_seeds()['genres']
         title = f"Breakdown of library by {primary_key_attribute}"
         print(f"generating analysis by {primary_key_attribute}")
         self.index_user_tracks()
@@ -106,8 +103,6 @@ class MusicAnalyzer:
         for audio_feature in audio_features_response:
             self.avg_audio_feats.append(AverageAudioFeatures(danceability=audio_feature['danceability'],
                                                              energy=audio_feature['energy'],
-                                                             speechiness=audio_feature['speechiness'],
-                                                             acousticness=audio_feature['acousticness'],
                                                              valence=audio_feature['valence'],
                                                              tempo=audio_feature['tempo']))
             txt_scale = f"{key_pitch_map[audio_feature['key']]} {mode_map[audio_feature['mode']]}"
@@ -230,8 +225,6 @@ class MusicAnalyzer:
         for avg_attribute in average_attributes_list:
             danceability += avg_attribute.danceability
             energy += avg_attribute.energy
-            speechiness += avg_attribute.speechiness
-            acousticness += avg_attribute.acousticness
             valence += avg_attribute.valence
             tempo += avg_attribute.tempo
         return {'danceability': round(danceability/total, 3),
