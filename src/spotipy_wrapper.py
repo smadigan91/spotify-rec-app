@@ -180,7 +180,8 @@ class SpotifyWrapper:
     def create_playlist_with_retries(self, user, playlist_name, playlist_description, delay=0):
         try:
             playlist_id = self.sp.user_playlist_create(user=user, name=playlist_name,
-                                                       description=playlist_description)['id']
+                                                       description=playlist_description,
+                                                       public=False)['id']
         except SpotifyException as spex:
             if spex.http_status == 429:
                 delay += 1
