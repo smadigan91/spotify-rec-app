@@ -22,7 +22,7 @@ app.permanent_session_lifetime = timedelta(minutes=30)
 SPOTIFY_CLIENT_ID = SPOTIFY_CLIENT_ID
 SPOTIFY_CLIENT_SECRET = SPOTIFY_CLIENT_SECRET
 SPOTIFY_REDIRECT_URI = f'{BASE_URL}/auth'
-scope = 'playlist-modify-public user-top-read'
+scope = 'playlist-modify-public playlist-modify-private playlist-read-private playlist-read-collaborative user-top-read'
 
 sp_oauth = oauth2.SpotifyOAuth(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REDIRECT_URI, scope=scope)
 
