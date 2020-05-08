@@ -10,10 +10,6 @@ http://spotipy.readthedocs.io/en/latest/#api-reference
 
 # How to run locally
 
-### Setting up react (post-login page)
-1. In src, run `npm install` (generate node_modules) and then `npm run start` so that new changes get updated in the bundle.js for auto-deploy
-2. Test out /main and /page2 routes (they nav to each other with buttons)
-
 ### Running with docker-compose
 As long as you have a decrypted secrets file, you can run the app locally using docker-compose.
 
