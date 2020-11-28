@@ -115,9 +115,12 @@ class SpotifyWrapper:
         if limit:
             self.log.info(f"Limiting recommendations to {limit} tracks per track in {playlist_name}, for a maximum"
                           f"recommendation size of {limit * len(playlist_tracks)}")
+        seed_tracks = seed.tracks
+        if len(seed_tracks) >= 5:
+            seed_tracks = seed_tracks[0:5]
         for track in playlist_tracks:
             recommendations = self.sp.recommendations(seed_genres=seed.genres, seed_artists=seed.artists,
-                                                      seed_tracks=[track.id], limit=limit, **filter_map)
+                                                      seed_tracks=[track.id] + seed_tracks, limit=limit, **filter_map)
             for track_to_add in recommendations.get('tracks', []):
                 rec_track = Track(track_to_add)
                 # only add tracks whose (name + artist name) is not present in the seed playlist
