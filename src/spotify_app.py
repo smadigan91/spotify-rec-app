@@ -12,9 +12,13 @@ app = Flask(__name__)
 log.basicConfig(format='%(levelname)s: %(message)s', level=log.DEBUG)
 app.logger = log
 app.secret_key = SESSION_KEY
-SESSION_TYPE = 'redis'
+# SESSION_TYPE = 'redis'
+# app.config['SESSION_TYPE'] = 'redis'
+# app.config['SESSION_REDIS'] = get_redis_connection()
 app.config['SESSION_TYPE'] = 'redis'
-app.config['SESSION_REDIS'] = get_redis_connection()
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=3)
+app.config['SESSION_FILE_THRESHOLD'] = 50
 sess = Session()
 sess.init_app(app)
 app.permanent_session_lifetime = timedelta(minutes=30)
